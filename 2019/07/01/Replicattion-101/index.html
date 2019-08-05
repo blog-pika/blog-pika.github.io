@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>Replication 101 | The Code and Sixpence</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="This blog is my reading notes for Designing Data-Intensive Applications, Chapter 05: Replication. OverviewReplication means keeping a copy of the same data on multiple machines that are connected via">
+<meta name="keywords" content="Distributed System,Replication">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Replication 101">
+<meta property="og:url" content="https://blog-pika.github.io/2019/07/01/Replicattion-101/index.html">
+<meta property="og:site_name" content="The Code and Sixpence">
+<meta property="og:description" content="This blog is my reading notes for Designing Data-Intensive Applications, Chapter 05: Replication. OverviewReplication means keeping a copy of the same data on multiple machines that are connected via">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://blog-pika.github.io/2019/07/01/_images/DDIA/Ch5-Single_Leader-Application.png">
+<meta property="og:image" content="https://blog-pika.github.io/2019/07/01/_images/DDIA/Ch5-Multi-leader-replication.png">
+<meta property="og:updated_time" content="2019-08-03T17:52:11.164Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Replication 101">
+<meta name="twitter:description" content="This blog is my reading notes for Designing Data-Intensive Applications, Chapter 05: Replication. OverviewReplication means keeping a copy of the same data on multiple machines that are connected via">
+<meta name="twitter:image" content="https://blog-pika.github.io/2019/07/01/_images/DDIA/Ch5-Single_Leader-Application.png">
+  
+    <link rel="alternate" href="/atom.xml" title="The Code and Sixpence" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">The Code and Sixpence</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://blog-pika.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Replicattion-101" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/07/01/Replicattion-101/" class="article-date">
+  <time datetime="2019-07-01T07:00:00.000Z" itemprop="datePublished">2019-07-01</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Distributed-System/">Distributed System</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Replication 101
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>This blog is my reading notes for <em>Designing Data-Intensive Applications</em>, Chapter 05: Replication.</p>
+<h2 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h2><p><code>Replication</code> means keeping a copy of the <strong>same data</strong> on multiple machines that are connected via a network. It has following benefits:</p>
+<ul>
+<li><strong>High availability</strong>: Keeping the system running, even when one/several machines goes down</li>
+<li><strong>Latency</strong>: Placing data geographically close to users, so that users can interact with it faster</li>
+<li><strong>Scalability</strong>: Being able to handle a higher volume of <strong>reads</strong> than a single machine could handle, by performing reads on replicas</li>
+</ul>
+<p>However, keeping data consistent between replicas are not as simple as it looks. We need to consider the following issues: node failures; unreliable networks; and tradeoffs around replica consistency, durability, availability, and latency. Let’s look at them one by one:</p>
+<ul>
+<li>should we use synchronous or asynchronous?</li>
+<li>which granularity of Replication Logs should we use?</li>
+<li>which kind of replication architecture: Single-leader, multiple-leader, or leaderless?</li>
+<li>should we provide consistency stronger than eventual consistency?</li>
+<li>How to handle node failure and unreliable network?</li>
+<li>How to handle concurrency write conflicts?</li>
+</ul>
+<h2 id="Synchronous-vs-Asynchronous"><a href="#Synchronous-vs-Asynchronous" class="headerlink" title="Synchronous vs Asynchronous"></a>Synchronous vs Asynchronous</h2><ul>
+<li><code>synchronous</code>: the leader waits until follower has confirmed that it received the write before reporting success to the user, and before making the write visible to other clients.</li>
+<li><code>asynchronous</code>: the leader sends the message, but doesn’t wait for a response from the follower.</li>
+<li><code>semi-synchronous</code>: one of the followers is synchronous, and the others are asynchronous. If the synchronous follower becomes unavailable or slow, one of the asynchronous followers is made synchronous. In practice, if you enable synchronous replication on a database, it usually means semi-synchronous.</li>
+</ul>
+<p><code>Synchronous</code> is impractical because the leader must block all writes and wait until the synchronous replica is available again. <strong>Often, leader-based replication is configured to be completely asynchronous</strong>. In this case, if the leader fails and is not recoverable, any writes that have not yet been replicated to followers are lost. This means that a write is not guaranteed to be durable, even if it has been confirmed to the client. However, a fully asynchronous configuration has the advantage that the leader can continue processing writes, even if all of its followers have fallen behind.</p>
+<h2 id="Granularity-of-Replication-Logs"><a href="#Granularity-of-Replication-Logs" class="headerlink" title="Granularity of Replication Logs"></a>Granularity of Replication Logs</h2><ul>
+<li><p><code>Statement-based</code> replication: Deprecated. In the simplest case, the leader logs every write request (statement) that it executes and sends that statement log to its followers. For a relational database, this means that every INSERT, UPDATE, or DELETE statement is forwarded to followers, and each follower parses and executes that SQL statement as if it had been received from a client. Statements may be nondeterministic or have side effects, which causes replications diverge.</p>
+</li>
+<li><p><code>Write-ahead log</code> (WAL) shipping: the log is an append-only sequence of bytes containing all writes to the database. We can use the exact same log to build a replica on another node. The disadvantage is that it makes replication closely coupled to the storage engine. A newer software version usually had format compatibility issue, which requires downtime for upgrading.</p>
+</li>
+<li><p><code>Logical (row-based)</code> log replication: A logical log for a relational database is usually a sequence of records describing writes to database tables at the granularity of a row.</p>
+</li>
+</ul>
+<h2 id="Replication-architectures"><a href="#Replication-architectures" class="headerlink" title="Replication architectures"></a>Replication architectures</h2><p>There are three main approaches to replication and each approach has advantages and disadvantages. Single-leader replication is popular because it is fairly easy to understand and there is no conflict resolution to worry about. Multi-leader and leaderless replication can be more robust in the presence of faulty nodes, network interruptions, and latency spikes—at the cost of being harder to reason about and providing only very weak consistency guarantees.</p>
+<h3 id="Single-leader-replication"><a href="#Single-leader-replication" class="headerlink" title="Single-leader replication"></a>Single-leader replication</h3><ol>
+<li>One of the replicas is designated the leader. Write requests of clients can only go to leader, which first writes the new data to its local storage.</li>
+<li>The other replicas are known as followers . Whenever the leader writes new data to its local storage, it also sends the data change to all of its followers. Each follower takes the log from the leader and updates its local copy of the database accordingly.</li>
+<li>When a client wants to read from the database, it can query either the leader or any of the followers. However, writes are only accepted on the leader.</li>
+</ol>
+<p><img src="../_images/DDIA/Ch5-Single_Leader-Application.png" alt="Leader-based replication"></p>
+<h3 id="Multi-leader-replication"><a href="#Multi-leader-replication" class="headerlink" title="Multi-leader replication"></a>Multi-leader replication</h3><p>Clients send each write to one of several leader nodes, any of which can accept writes. The leaders send streams of data change events to each other and to any follower nodes.</p>
+<p><img src="../_images/DDIA/Ch5-Multi-leader-replication.png" alt="Multi-leader replication across multiple data centers"></p>
+<p>Multi-leader replication has advantage on performance, tolerance of datacenter outages, tolerance of network problems.<br>However, it rarely makes sense to use a multi-leader setup within a single datacenter, because the benefits rarely outweigh the added complexity: the same data may be concurrently modified in two different datacenters, and those write conflicts must be resolved.</p>
+<p>Here are some common use cases for multi-leader replication:</p>
+<ul>
+<li>Multi-datacenter operation: Within each datacenter, regular leader-follower replication is used; between datacenters, each datacenter’s leader replicates its changes to the leaders in other datacenters.</li>
+<li>Clients with offline operation: you have an application that needs to continue to work with multiple devices while they are disconnected from the internet.In this case, every device has a local database that acts as a leader (it accepts write requests), and there is an asynchronous multi-leader replication process (sync) between the replicas on all of your devices.</li>
+<li>Collaborative editing: When one user edits a document, the changes are instantly applied to their local replica (the state of the document ) and asynchronously replicated to the server and any other users who are editing the same document.</li>
+</ul>
+<h3 id="Leaderless-replication"><a href="#Leaderless-replication" class="headerlink" title="Leaderless replication"></a>Leaderless replication</h3><p>Also called Dynamo-style: allow any replica to directly accept writes from clients. In some leaderless implementations, the client directly sends its writes to several replicas, while in others, a coordinator node does this on behalf of the client. However, unlike a leader database, that coordinator <strong>does not enforce a particular ordering of writes</strong>. Version numbers are used to determine which value is newer.</p>
+<p><code>quorum reads and writes</code> tries to solve the issue of reading stale data: if there are n replicas, every write must be confirmed by w nodes(synchronized) to be considered successful, and we must query at least r nodes for each read. As long as there is an <strong>overlap</strong>, that is, w + r &gt; n, we expect to get an up-to-date value when reading. With a smaller w and r you are more likely to read stale values, but this configuration allows lower latency and higher availability.</p>
+<p>However, even with w + r &gt; n, there are likely to be edge cases where stale values are returned, e.g., sloppy quorum, two writes occur concurrently, a write happens concurrently. Thus, <strong>Dynamo-style databases are generally optimized for use cases that can tolerate eventual consistency</strong>.</p>
+<p>How to ensure that eventually all the data is copied to every replica? There are two ways:</p>
+<ul>
+<li><p><strong>Read repair</strong>: When a client makes a read from several nodes in parallel, it can detect any stale responses. The client then writes the newer value back to the replica that has stale data.<br>This approach works well for values that are frequently read. However, values that are rarely read may be missing from some replicas and thus have reduced durability.</p>
+</li>
+<li><p><strong>Anti-entropy process</strong>: a background process that constantly looks for differences in the data between replicas and copies any missing data from one replica to another. Unlike the replication log in leader-based replication, this anti-entropy process does not copy writes in any particular order, and there may be a significant delay before data is copied.</p>
+</li>
+</ul>
+<h2 id="Node-Failures"><a href="#Node-Failures" class="headerlink" title="Node Failures"></a>Node Failures</h2><p>If a follower fails, we can use the <code>Catch-up</code> strategy. On its local disk, each follower keeps a log of the data changes it has received from the leader. If a follower crashes and is restarted, or if the network recovers from a temporary failure, it can connect to the leader and request all the data changes that occurred during the time when the follower was disconnected. When it has applied these changes, it has caught up to the leader and can continue receiving a stream of data changes as before.</p>
+<p>If a leader fails, we can use the <code>Failover</code> strategy: one of the followers needs to be promoted to be the new leader, clients need to be reconfigured to send their writes to the new leader, and the other followers need to start consuming data changes from the new leader.</p>
+<p>An automatic failover process usually consists of the following steps:</p>
+<ol>
+<li><p>Determining that the leader has failed. There is no foolproof way of detecting if a node is crashed or disconnected from the network, so most systems simply use a <strong>timeout</strong>: nodes frequently bounce heartbeat message back and forth between each other, and if a node doesn’t respond for some period of time, it is assumed to be dead.</p>
+</li>
+<li><p>Choosing a new leader. This could be done through an election process, or a new leader could be appointed by a previously elected controller node. The best candidate for leadership is usually the replica with the most up-to-date data changes from the old leader.</p>
+</li>
+<li><p>Reconfiguring the system to use the new leader. Clients now need to send their write requests to the new leader. The system needs to ensure that the old leader becomes a follower and recognizes the new leader, if the old leader comes back.</p>
+</li>
+</ol>
+<h2 id="Challenges-with-Replication-Lag"><a href="#Challenges-with-Replication-Lag" class="headerlink" title="Challenges with Replication Lag"></a>Challenges with Replication Lag</h2><p>In an asynchronous architecture, client may see outdated information if the replica has fallen behind. If you stop writing to the database and wait a while, replicas will eventually catch up and become consistent with each other, which is known as <code>eventual consistency</code>.</p>
+<p>When working with an eventually consistent system, it is worth thinking about how the application behaves if the replication lag increases to several minutes or even hours. If the answer is “no problem,” that’s great. However, if the result is a bad experience for users, it’s important to design the system to provide a stronger guarantee.</p>
+<h3 id="Reading-Your-Own-Writes"><a href="#Reading-Your-Own-Writes" class="headerlink" title="Reading Your Own Writes"></a>Reading Your Own Writes</h3><p>When new data is submitted, it must be sent to the leader, but when the user views the data, it can be read from a follower. the new data may not yet have reached the replica. To the user, it looks as though the data they submitted was lost</p>
+<p><code>read-after-write consistency</code>: This is a guarantee that if the user reloads the page, they will always see any updates they submitted themselves. It makes no promises about other users: other users’ updates may not be visible until some later time.</p>
+<p>Implementations in leader-based architecture:</p>
+<ul>
+<li>If only a few things in the application are potentially editable by the user, when reading something that the user may have modified, read it from the leader; otherwise, read it from a follower</li>
+<li>Use criteria to decide whether to read from the leader, i.e, for one minute after the last update, make all reads from the leader</li>
+<li>The client can remember the timestamp of its most recent write. If a replica is not sufficiently up to date, query another replica or wait until the replica has caught up.</li>
+</ul>
+<h3 id="Monotonic-Reads"><a href="#Monotonic-Reads" class="headerlink" title="Monotonic Reads"></a>Monotonic Reads</h3><p>When reading from asynchronous followers is that it’s possible for a user to see things moving backward in time because of reading an out-of-date replica.</p>
+<p><code>Monotonic reads</code>: if one user makes several reads in sequence, they will not read older data after having previously read newer data.</p>
+<p>Implementation: each user always makes their reads from the same replica, i.e., the replica can be chosen based on a hash of the user ID.</p>
+<h3 id="Consistent-Prefix-Reads"><a href="#Consistent-Prefix-Reads" class="headerlink" title="Consistent Prefix Reads"></a>Consistent Prefix Reads</h3><p><code>consistent prefix reads</code>: if a sequence of writes happens in a certain order, then anyone reading those writes will see them appear in the same order.</p>
+<p>One implementation is to make sure that any writes that are causally related to each other are written to the same partition.</p>
+<h2 id="Concurrency-Write-Conflicts"><a href="#Concurrency-Write-Conflicts" class="headerlink" title="Concurrency Write Conflicts"></a>Concurrency Write Conflicts</h2><p>Concurrency Write issues are inherent in multi-leader and leaderless replication approaches: because they allow multiple writes to happen concurrently, conflicts may occur.</p>
+<h3 id="Conflict-avoidance"><a href="#Conflict-avoidance" class="headerlink" title="Conflict avoidance"></a>Conflict avoidance</h3><p>If the application can ensure that all writes for a particular record go through the same leader, then conflicts cannot occur, i.e, route user write requests to the same leader based on the hash of its user id.</p>
+<h3 id="Converging-toward-a-consistent-state"><a href="#Converging-toward-a-consistent-state" class="headerlink" title="Converging toward a consistent state"></a>Converging toward a consistent state</h3><p>Approaches that are dangerously prone to data loss:</p>
+<ul>
+<li>Give each <strong>write</strong> a unique ID (e.g., a timestamp, a long random number, a UUID, or a hash of the key and value), pick the write with the highest ID as the winner, and throw away the other writes. If a timestamp is used, this technique is known as <code>last write wins (LWW)</code></li>
+<li>Give each replica a unique ID, and let writes that originated at a higher numbered replica always take precedence over writes that originated at a lower numbered replica.</li>
+</ul>
+<p>There are some situations, such as caching, in which lost writes are perhaps acceptable. If losing data is not acceptable, LWW is a poor choice for conflict resolution. The only safe way of using a database with LWW is to ensure that a key is only written once and thereafter treated as immutable, thus avoiding any concurrent updates to the same key. For example, a recommended way of using Cassandra is to use a UUID as the key, thus giving each write operation a unique key</p>
+<p>Other approaches are:</p>
+<ul>
+<li>merge the values together, e.g., order them alphabetically and then concatenate them</li>
+<li>Record the conflict in an explicit data structure that preserves all information, and write application code that resolves the conflict at some later time (perhaps by prompting the user).</li>
+</ul>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><blockquote>
+<p>[1] <em>Designing Data-Intensive Applications</em>, Chapter 05: Replication</p>
+</blockquote>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://blog-pika.github.io/2019/07/01/Replicattion-101/" data-id="cjyxovs7f001a6pm98wl9huhj" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Distributed-System/">Distributed System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Replication/">Replication</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/04/20/Weenix/Weenix09 - Summary/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Weenix09 - Summary</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Coding-Notes/">Coding Notes</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Distributed-System/">Distributed System</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Weenix/">Weenix</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed-System/">Distributed System</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/File-System/">File System</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Fork/">Fork</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/K-Means/">K-Means</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Pattern-Matching/">Pattern Matching</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Process/">Process</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Scala/">Scala</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spark/">Spark</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spark-SQL/">Spark SQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Thread/">Thread</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Virtual-Memory/">Virtual Memory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Weenix/">Weenix</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C/" style="font-size: 20px;">C</a> <a href="/tags/Distributed-System/" style="font-size: 10px;">Distributed System</a> <a href="/tags/File-System/" style="font-size: 13.33px;">File System</a> <a href="/tags/Fork/" style="font-size: 10px;">Fork</a> <a href="/tags/K-Means/" style="font-size: 10px;">K-Means</a> <a href="/tags/Operating-System/" style="font-size: 20px;">Operating System</a> <a href="/tags/Pattern-Matching/" style="font-size: 10px;">Pattern Matching</a> <a href="/tags/Process/" style="font-size: 10px;">Process</a> <a href="/tags/Replication/" style="font-size: 10px;">Replication</a> <a href="/tags/Scala/" style="font-size: 16.67px;">Scala</a> <a href="/tags/Spark/" style="font-size: 13.33px;">Spark</a> <a href="/tags/Spark-SQL/" style="font-size: 10px;">Spark SQL</a> <a href="/tags/Thread/" style="font-size: 10px;">Thread</a> <a href="/tags/Virtual-Memory/" style="font-size: 10px;">Virtual Memory</a> <a href="/tags/Weenix/" style="font-size: 20px;">Weenix</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">July 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">April 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/07/01/Replicattion-101/">Replication 101</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/20/Weenix/Weenix09 - Summary/">Weenix09 - Summary</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/20/Weenix/Weenix08 - Fork/">Weenix08 - Fork</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/20/Weenix/Weenix07 - Shadow Object/">Weenix07 - Shadow Object</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/15/Weenix/Weenix06 - Debug anon_put()/">Weenix06 - Debug anon_put()</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 Developer Pikachu<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>Weenix03 - Debug Virtual File System | The Code and Sixpence</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Weenix is the kernel assignment of my OS course. I and my teammates Xiaowei Cheng, Yanghua, Huang, Donghua Yin finishes all the assignment together, including designing, coding, reviewing, debugging.">
+<meta name="keywords" content="Weenix,Operating System,C,File System">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Weenix03 - Debug Virtual File System">
+<meta property="og:url" content="https://blog-pika.github.io/2018/04/02/Weenix/Weenix03 - Debug-Virtual-File-System/index.html">
+<meta property="og:site_name" content="The Code and Sixpence">
+<meta property="og:description" content="Weenix is the kernel assignment of my OS course. I and my teammates Xiaowei Cheng, Yanghua, Huang, Donghua Yin finishes all the assignment together, including designing, coding, reviewing, debugging.">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-06-19T01:19:30.736Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Weenix03 - Debug Virtual File System">
+<meta name="twitter:description" content="Weenix is the kernel assignment of my OS course. I and my teammates Xiaowei Cheng, Yanghua, Huang, Donghua Yin finishes all the assignment together, including designing, coding, reviewing, debugging.">
+  
+    <link rel="alternate" href="/atom.xml" title="The Code and Sixpence" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">The Code and Sixpence</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://blog-pika.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Weenix/Weenix03 - Debug-Virtual-File-System" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/04/02/Weenix/Weenix03 - Debug-Virtual-File-System/" class="article-date">
+  <time datetime="2018-04-02T07:00:01.000Z" itemprop="datePublished">2018-04-02</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Weenix/">Weenix</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Weenix03 - Debug Virtual File System
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>Weenix is the kernel assignment of my OS course. I and my teammates Xiaowei Cheng, Yanghua, Huang, Donghua Yin finishes all the assignment together, including designing, coding, reviewing, debugging. It is a great pleasure to work with and learn from them.</p>
+</blockquote>
+<h1 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h1><p>This article, which records some mistakes we made when implementing VFS for Weenix, is the follow-up for <a href="http://blog.taowang.cloud/2018/04/02/Weenix-Virtual-File-System-Overview/" target="_blank" rel="noopener">Weenix - Virtual File System Overview</a>. With the help of the detailed documentation, understanding the architecture of the Weenix VFS system and implementing the core functions are not that hard. However, debugging the kernel is torturing, because it is difficult to analyze the nodes, even with the help of GDB. </p>
+<p>Below are 3 core functions for implementing VFS. You can read the comments of the source code of Weenix to get more information.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* This takes a base 'dir', a 'name', its 'len', and a result vnode. */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">lookup</span><span class="params">(<span class="keyword">vnode_t</span> *dir, <span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">size_t</span> len, <span class="keyword">vnode_t</span> **result)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* When successful this function returns data in the following "out"-arguments:</span></span><br><span class="line"><span class="comment"> *  o res_vnode: the vnode of the parent directory of "name"</span></span><br><span class="line"><span class="comment"> *  o name: the `basename' (the element of the pathname)</span></span><br><span class="line"><span class="comment"> *  o namelen: the length of the basename</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * For example: dir_namev("/s5fs/bin/ls", &amp;namelen, &amp;name, NULL,</span></span><br><span class="line"><span class="comment"> * &amp;res_vnode) would put 2 in namelen, "ls" in name, and a pointer to the</span></span><br><span class="line"><span class="comment"> * vnode corresponding to "/s5fs/bin" in res_vnode. */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dir_namev</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">size_t</span> *namelen, <span class="keyword">const</span> <span class="keyword">char</span> **name, <span class="keyword">vnode_t</span> *base, <span class="keyword">vnode_t</span> **res_vnode)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* This function uses pathname to find the specified vnode if it exists */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">open_namev</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">int</span> flag, <span class="keyword">vnode_t</span> **res_vnode, <span class="keyword">vnode_t</span> *base)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Records"><a href="#Records" class="headerlink" title="Records"></a>Records</h1><p>Handling ref_count of file and vnode is the nightmare. Though it seems trivial to manage ref_count at the first glance, it is the root causes of the most bugs.</p>
+<h2 id="1-Use-vput-too-early"><a href="#1-Use-vput-too-early" class="headerlink" title="1. Use vput() too early"></a>1. Use vput() too early</h2><p>The <strong>unlink</strong> system call is supposed to be implemented in this way: <em>Use dir_namev() to find the vnode of the directory containing the dir to be removed. Then call the containing dir’s unlink v_op</em>. When testing our implementation of <strong>unlink</strong> system call, the parent directory vnode returns <em>ENOTDIR(Not a directory)</em> unexpectedly. At first, we think that there are some bugs in our <strong>mknod</strong> implementation or in dir_namev() implementation, so we get the wrong vnode. However, we cannot find any related bugs when reviewing these code segments. We also made some similar mistakes in the implementation of other system calls.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Code segment of unlink system call - Wrong */</span></span><br><span class="line"><span class="keyword">int</span> dir_res = dir_namev(path, &amp;name_len, &amp;name, <span class="literal">NULL</span>, &amp;dir_node);</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Since we increase the vref count of parent_dir_vnode</span></span><br><span class="line"><span class="comment"> * We need to use vput to decrease it</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">vput(dir_node);</span><br><span class="line"></span><br><span class="line"><span class="comment">/* A directory vnode has the lookup method while a file node does not */</span></span><br><span class="line"><span class="keyword">if</span>(dir_node-&gt;vn_ops-&gt;lookup == <span class="literal">NULL</span>)&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">return</span> -ENOTDIR;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Luckily we have GDB. After printing all the fields of the parent directory vnode, we found out that the vn_ops field points to NULL after executing vput(). This is because vput() function will delete most of a vnode’s fields when the ref_count s the vnode reaches zero, including the lookup function. </p>
+<p>The solution is to delay executing vput(). </p>
+<pre><code class="C"><span class="comment">/* Code segment of unlink system call - Correct */</span>
+<span class="keyword">int</span> dir_res = dir_namev(path, &amp;name_len, &amp;name, <span class="literal">NULL</span>, &amp;dir_node);
+...
+
+<span class="comment">/* A directory vnode has the lookup method while a file node does not */</span>
+<span class="keyword">if</span>(dir_node-&gt;vn_ops-&gt;lookup == <span class="literal">NULL</span>){
+    vput(dir_node);
+    ...
+    <span class="keyword">return</span> -ENOTDIR;
+}</code></pre>
+<h2 id="2-Cannot-pass-vfstest-after-running-thrtest"><a href="#2-Cannot-pass-vfstest-after-running-thrtest" class="headerlink" title="2. Cannot pass vfstest after running thrtest"></a>2. Cannot pass vfstest after running thrtest</h2><p>We can pass vfstest successfully if we run it before running thrtest. However, if we run vfstest after running thrtest, we will get this error: </p>
+<blockquote>
+<p>panic in fs/ramfs/ramfs.c:255 ramfs_read_vnode(): assertion failed: inode &amp;&amp; inode-&gt;rf_ino == vn-&gt;vn_vno<br>Kernel Halting.</p>
+</blockquote>
+<p>Using gdb we can found out that the assertion is failed when executing path_equals(“/“, “/“), or more specifically, the assertion failed when we lookup “” in the root node. </p>
+<p>We finally find the reason why we can’t lookup the empty name after thrtest. Because the rmdir function in ramfs doesn’t clean the entry-&gt;rd_ino, while it cleans the entry-&gt;rd_name.<br>For example,  before we run the thrtest, as for the root vnode, the entry(entry-&gt;rd_name, entry-&gt;rd_ino) can be {“.”, 0}, {“..”, 0}, {“dev”, 1}, {“vfstest-xxx”, 6}, {“”, 0}, {“”, 0}, then all the same. But when we run thrtest 2, the entry of the root vnode can be like {“.”, 0}, {“..”, 0}, {“dev”, 1}, {“dir000”, 27}, {“”, 0},…. After we called rmdir function, the entry just becomes {“.”, 0}, {“..”, 0}, {“dev”, 1}, {“”, 27}(we remove the directory), {“”, 0}, then we run the vfstest and lookup the empty name, we can just get the wrong entry-&gt;rd_ino and the corresponding file is already closed. So in </p>
+<blockquote>
+<p>KASSERT(inode &amp;&amp; inode-&gt;rf_ino == vn-&gt;vn_vno)<br>we will get the panic in<br>fs/ramfs/ramfs.c:255 ramfs_read_vnode(): assertion failed: inode &amp;&amp; inode-&gt;rf_ino == vn-&gt;vn_vno<br>Kernel Halting.<br>since inode is NULL.</p>
+</blockquote>
+<h2 id="3-File-Permission"><a href="#3-File-Permission" class="headerlink" title="3. File Permission"></a>3. File Permission</h2><p>Made some mistakes when handling permission of files. For example, write to a directory should not be allowed.</p>
+<h2 id="4-Root-Vnode-is-not-handled-Correctly"><a href="#4-Root-Vnode-is-not-handled-Correctly" class="headerlink" title="4. Root Vnode is not handled Correctly"></a>4. Root Vnode is not handled Correctly</h2><p>When we create the idle process and init process, we should set the root_vnode as their current_working_direcotry and increase the ref_count of root_vnode. When cleaning up the idle and init process, we should also decrease the ref_count of root_vnode accordingly. </p>
+<p>All processes except pageout daemon process have a current working directory, and you should handle this corner case elegantly. Otherwise, you will get page fault or your kernel cannot shutdown cleanly.</p>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><blockquote>
+<p>[1] <em>Operating Systems in Depth</em>, Thomas W. Doeppner, Brown University<br>[2] <a href="https://cs.brown.edu/courses/cs167/content/weenix-doc.pdf" target="_blank" rel="noopener">Weenix Documentation
+</a></p>
+</blockquote>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://blog-pika.github.io/2018/04/02/Weenix/Weenix03 - Debug-Virtual-File-System/" data-id="cjyxovs7y001j6pm957anfwzk" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/">C</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/File-System/">File System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Weenix/">Weenix</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/04/15/Weenix/Weenix04 - Virtual Memeory Overview/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Weenix04 - Virtual Memory Overview
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/04/02/Weenix/Weenix02 - Virtual-File-System-Overview/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Weenix02 - Virtual File System Overview</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Coding-Notes/">Coding Notes</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Distributed-System/">Distributed System</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Weenix/">Weenix</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed-System/">Distributed System</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/File-System/">File System</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Fork/">Fork</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/K-Means/">K-Means</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Pattern-Matching/">Pattern Matching</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Process/">Process</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Scala/">Scala</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spark/">Spark</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spark-SQL/">Spark SQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Thread/">Thread</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Virtual-Memory/">Virtual Memory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Weenix/">Weenix</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C/" style="font-size: 20px;">C</a> <a href="/tags/Distributed-System/" style="font-size: 10px;">Distributed System</a> <a href="/tags/File-System/" style="font-size: 13.33px;">File System</a> <a href="/tags/Fork/" style="font-size: 10px;">Fork</a> <a href="/tags/K-Means/" style="font-size: 10px;">K-Means</a> <a href="/tags/Operating-System/" style="font-size: 20px;">Operating System</a> <a href="/tags/Pattern-Matching/" style="font-size: 10px;">Pattern Matching</a> <a href="/tags/Process/" style="font-size: 10px;">Process</a> <a href="/tags/Replication/" style="font-size: 10px;">Replication</a> <a href="/tags/Scala/" style="font-size: 16.67px;">Scala</a> <a href="/tags/Spark/" style="font-size: 13.33px;">Spark</a> <a href="/tags/Spark-SQL/" style="font-size: 10px;">Spark SQL</a> <a href="/tags/Thread/" style="font-size: 10px;">Thread</a> <a href="/tags/Virtual-Memory/" style="font-size: 10px;">Virtual Memory</a> <a href="/tags/Weenix/" style="font-size: 20px;">Weenix</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">July 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">April 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/07/01/Replicattion-101/">Replication 101</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/20/Weenix/Weenix09 - Summary/">Weenix09 - Summary</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/20/Weenix/Weenix08 - Fork/">Weenix08 - Fork</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/20/Weenix/Weenix07 - Shadow Object/">Weenix07 - Shadow Object</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/15/Weenix/Weenix06 - Debug anon_put()/">Weenix06 - Debug anon_put()</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 Developer Pikachu<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

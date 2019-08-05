@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>Weenix02 - Virtual File System Overview | The Code and Sixpence</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Weenix is the kernel assignment of my OS course. I and my teammates Xiaowei Cheng, Yanghua, Huang, Donghua Yin finishes all the assignment together, including designing, coding, reviewing, debugging.">
+<meta name="keywords" content="Weenix,Operating System,C,File System">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Weenix02 - Virtual File System Overview">
+<meta property="og:url" content="https://blog-pika.github.io/2018/04/02/Weenix/Weenix02 - Virtual-File-System-Overview/index.html">
+<meta property="og:site_name" content="The Code and Sixpence">
+<meta property="og:description" content="Weenix is the kernel assignment of my OS course. I and my teammates Xiaowei Cheng, Yanghua, Huang, Donghua Yin finishes all the assignment together, including designing, coding, reviewing, debugging.">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://bytebucket.org/LarryTaoWang/pictureofblog/raw/f09ad8a1f1a76f16ab34c2dd0ac4702b4a324b00/Weenix/VFS%20structs.png">
+<meta property="og:image" content="https://bytebucket.org/LarryTaoWang/pictureofblog/raw/f09ad8a1f1a76f16ab34c2dd0ac4702b4a324b00/Weenix/File%20Descriptor%20After%20Fork.png">
+<meta property="og:updated_time" content="2019-06-19T01:19:30.736Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Weenix02 - Virtual File System Overview">
+<meta name="twitter:description" content="Weenix is the kernel assignment of my OS course. I and my teammates Xiaowei Cheng, Yanghua, Huang, Donghua Yin finishes all the assignment together, including designing, coding, reviewing, debugging.">
+<meta name="twitter:image" content="https://bytebucket.org/LarryTaoWang/pictureofblog/raw/f09ad8a1f1a76f16ab34c2dd0ac4702b4a324b00/Weenix/VFS%20structs.png">
+  
+    <link rel="alternate" href="/atom.xml" title="The Code and Sixpence" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">The Code and Sixpence</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://blog-pika.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Weenix/Weenix02 - Virtual-File-System-Overview" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/04/02/Weenix/Weenix02 - Virtual-File-System-Overview/" class="article-date">
+  <time datetime="2018-04-02T07:00:00.000Z" itemprop="datePublished">2018-04-02</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Weenix/">Weenix</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Weenix02 - Virtual File System Overview
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>Weenix is the kernel assignment of my OS course. I and my teammates Xiaowei Cheng, Yanghua, Huang, Donghua Yin finishes all the assignment together, including designing, coding, reviewing, debugging. It is a great pleasure to work with and learn from them.</p>
+</blockquote>
+<h1 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h1><p>Before this post we have successfully implemented the thread related code for Weenix kernel. Now it is time to add support for the file system. Weenix has already provided us with the <strong>Actual File System</strong>(AFS) implementation, therefore, we only need to implement the code related to the <strong>Virtual File System(VFS)</strong>.</p>
+<p>VFS is the abstraction layer beyond the AFS. VFS is like the interface while the AFS is the actual implementation. For example, VFS specifies that the AFS should implement read(), write() operations and how they should be implemented; different AFS can implement read() and write() in their own way. For Weenix, the AFS can be RAMFS, S5FS, etc.; for Linux, the AFS can be ext2, ext3, ext4, etc.; for Windows, the AFS can be FAT12, FAT32, FAT64, etc.. </p>
+<p>Below are the 4 most important structs for VFS: struct <strong>proc</strong>, struct <strong>file</strong>, struct <strong>vnode</strong>, struct <strong>fs</strong>. For detailed information, please refer to the source code and the documentation of Weenix from Brown University.</p>
+<img src="https://bytebucket.org/LarryTaoWang/pictureofblog/raw/f09ad8a1f1a76f16ab34c2dd0ac4702b4a324b00/Weenix/VFS%20structs.png">
+
+
+
+<h1 id="Important-Structs"><a href="#Important-Structs" class="headerlink" title="Important Structs"></a>Important Structs</h1><p>To be short, proc struct stores a table of file descriptors, which can be used to find file struct. File struct stores the information of a file descriptor, which can be used to find a vnode struct. A vnode can be used to find an actual file system, struct fs. </p>
+<h2 id="Struct-proc"><a href="#Struct-proc" class="headerlink" title="Struct proc"></a>Struct proc</h2><p>Every process struct* has its own file descriptor table, which is shared by its threads. When a child process is created, it will inherit this table(not the file!) from the parent process. </p>
+<p>We can use p_files[NFILES] attribute to find the corresponding file struct of a file descriptor.</p>
+<h2 id="Struct-file"><a href="#Struct-file" class="headerlink" title="Struct file"></a>Struct file</h2><p>Every entry in this table maps to a file struct, which stores the meta-data of the file descriptor and the associated vnode. One thing to notice is that the mode of a file descriptor is independent of the mode of a file. For example, if we open file A with only read permission, i.e.,</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> fd = open(<span class="string">"A"</span>, O_RDONLY, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+
+<p>Even though file “A” is created with both write and read permissions, you can only do read operation to this file, because the file descriptor is read-only.</p>
+<p>Another important attribute is ref_count, which is the number of references to this struct. Different file descriptor may point to the same file struct, i.e., dup or creating a child process. When the ref_count is down to 0, the file struct will be cleaned up. </p>
+<img src="https://bytebucket.org/LarryTaoWang/pictureofblog/raw/f09ad8a1f1a76f16ab34c2dd0ac4702b4a324b00/Weenix/File%20Descriptor%20After%20Fork.png">
+
+<p>We can use node attribute to find the corresponding vnode struct of a file.</p>
+<h2 id="Struct-vnode"><a href="#Struct-vnode" class="headerlink" title="Struct vnode"></a>Struct vnode</h2><p>One important attribute is the <strong>vnode_ops</strong>. VFS defines the operations an AFS should implement but different AFS can have different implementations. When we call the operation in VFS, the implementation of the corresponding AFS instance will be called. This feature is called <strong>polymofism</strong>. If you have worked with OOD languages such as C++ or Java, you should be quite familiar with this concept. C implements polymorphism with the function pointer. For further information, you can google “Objected-Oriented C”.</p>
+<p><strong>vn_ref_count</strong> is the number of references to this vnode. But this can be much more complexed than ref_count in fs struct, because Weenix caches file into memories, and the memory pages will influence the ref_count of vnode. </p>
+<p>Two important things to remember is that</p>
+<ol>
+<li>ref_count_of_vnode = ref_count_of_file + ref_count_from_memory_page</li>
+<li>If ref_count_of_vnode = ref_count_from_memory_page, then no file is using this vnode, that is, only the cache is using the vnode. At this time we can safely free up this vnode.</li>
+</ol>
+<p>If you want more information, the Weenix documentation has an excellent introduction to this attribute as well as the corner case and optimization. </p>
+<p>We can use <strong>fs</strong> attribute to find the corresponding vnode struct of a file.</p>
+<p>One thing I want to complain is the design of the vnode struct and fs struct. These structs do not have a name attribute, which is supposed to correspond to the path name. The lacking path information makes debugging much harder. When using gdb to print the information of a node, since we don’t know the path name, we need to guess which pathname it belongs by analyzing the node is manually.</p>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><blockquote>
+<p>[1] <em>Operating Systems in Depth</em>, Thomas W. Doeppner, Brown University<br>[2] <a href="https://cs.brown.edu/courses/cs167/content/weenix-doc.pdf" target="_blank" rel="noopener">Weenix Documentation
+</a></p>
+</blockquote>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://blog-pika.github.io/2018/04/02/Weenix/Weenix02 - Virtual-File-System-Overview/" data-id="cjyxovs7u001g6pm9oa1ou2y8" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/">C</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/File-System/">File System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Weenix/">Weenix</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/04/02/Weenix/Weenix03 - Debug-Virtual-File-System/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Weenix03 - Debug Virtual File System
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/03/01/Weenix/Weenix01 - Process-and-Thread/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Weenix01 - Process and Thread</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Coding-Notes/">Coding Notes</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Distributed-System/">Distributed System</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Weenix/">Weenix</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed-System/">Distributed System</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/File-System/">File System</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Fork/">Fork</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/K-Means/">K-Means</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Pattern-Matching/">Pattern Matching</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Process/">Process</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Scala/">Scala</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spark/">Spark</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spark-SQL/">Spark SQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Thread/">Thread</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Virtual-Memory/">Virtual Memory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Weenix/">Weenix</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C/" style="font-size: 20px;">C</a> <a href="/tags/Distributed-System/" style="font-size: 10px;">Distributed System</a> <a href="/tags/File-System/" style="font-size: 13.33px;">File System</a> <a href="/tags/Fork/" style="font-size: 10px;">Fork</a> <a href="/tags/K-Means/" style="font-size: 10px;">K-Means</a> <a href="/tags/Operating-System/" style="font-size: 20px;">Operating System</a> <a href="/tags/Pattern-Matching/" style="font-size: 10px;">Pattern Matching</a> <a href="/tags/Process/" style="font-size: 10px;">Process</a> <a href="/tags/Replication/" style="font-size: 10px;">Replication</a> <a href="/tags/Scala/" style="font-size: 16.67px;">Scala</a> <a href="/tags/Spark/" style="font-size: 13.33px;">Spark</a> <a href="/tags/Spark-SQL/" style="font-size: 10px;">Spark SQL</a> <a href="/tags/Thread/" style="font-size: 10px;">Thread</a> <a href="/tags/Virtual-Memory/" style="font-size: 10px;">Virtual Memory</a> <a href="/tags/Weenix/" style="font-size: 20px;">Weenix</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">July 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">April 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/07/01/Replicattion-101/">Replication 101</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/20/Weenix/Weenix09 - Summary/">Weenix09 - Summary</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/20/Weenix/Weenix08 - Fork/">Weenix08 - Fork</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/20/Weenix/Weenix07 - Shadow Object/">Weenix07 - Shadow Object</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/15/Weenix/Weenix06 - Debug anon_put()/">Weenix06 - Debug anon_put()</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 Developer Pikachu<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

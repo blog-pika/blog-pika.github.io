@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>Summary for a Spark SQL Project | The Code and Sixpence</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="This article records some mistakes I made when doing the coding assignment from course Big Data Analysis with Scala and Spark. The assignment requires us to analyze data with Spark SQL. Create RowWhen">
+<meta name="keywords" content="Spark,Scala,Spark SQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Summary for a Spark SQL Project">
+<meta property="og:url" content="https://blog-pika.github.io/2017/12/25/Summary-for-a-Spark-SQL-Project/index.html">
+<meta property="og:site_name" content="The Code and Sixpence">
+<meta property="og:description" content="This article records some mistakes I made when doing the coding assignment from course Big Data Analysis with Scala and Spark. The assignment requires us to analyze data with Spark SQL. Create RowWhen">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://bytebucket.org/LarryTaoWang/pictureofblog/raw/a8a037eb56415c8432b523e6358b28d43ca7065d/Spark/SparkSQL-Column.png">
+<meta property="og:updated_time" content="2019-06-19T01:19:30.735Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Summary for a Spark SQL Project">
+<meta name="twitter:description" content="This article records some mistakes I made when doing the coding assignment from course Big Data Analysis with Scala and Spark. The assignment requires us to analyze data with Spark SQL. Create RowWhen">
+<meta name="twitter:image" content="https://bytebucket.org/LarryTaoWang/pictureofblog/raw/a8a037eb56415c8432b523e6358b28d43ca7065d/Spark/SparkSQL-Column.png">
+  
+    <link rel="alternate" href="/atom.xml" title="The Code and Sixpence" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">The Code and Sixpence</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://blog-pika.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Summary-for-a-Spark-SQL-Project" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/12/25/Summary-for-a-Spark-SQL-Project/" class="article-date">
+  <time datetime="2017-12-25T19:25:29.000Z" itemprop="datePublished">2017-12-25</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Coding-Notes/">Coding Notes</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Summary for a Spark SQL Project
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>This article records some mistakes I made when doing the coding assignment from course <a href="https://www.coursera.org/learn/scala-spark-big-data/programming/T19Ec/time-usage" target="_blank" rel="noopener">Big Data Analysis with Scala and Spark</a>. The assignment requires us to analyze data with Spark SQL.</p>
+<h1 id="Create-Row"><a href="#Create-Row" class="headerlink" title="Create Row"></a>Create Row</h1><p>When creating a Row object, the constructer requires unpacked list of arguments, rather than a list.<br>Wrong version:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">row</span></span>(line: <span class="type">List</span>[<span class="type">String</span>]): <span class="type">Row</span> = &#123;</span><br><span class="line">    <span class="keyword">val</span> record = line.zipWithIndex.map(_.swap).map&#123;</span><br><span class="line">      <span class="keyword">case</span> (index, rowValue) =&gt; <span class="keyword">if</span>(index == <span class="number">0</span>) rowValue.trim <span class="keyword">else</span> rowValue.toDouble</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Row([List(foo, 1.0, 2.0)]) is wrong</span></span><br><span class="line">    <span class="type">Row</span>(record.toArray)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Correct Version:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">row</span></span>(line: <span class="type">List</span>[<span class="type">String</span>]): <span class="type">Row</span> = &#123;</span><br><span class="line">    <span class="keyword">val</span> record = line.zipWithIndex.map(_.swap).map&#123;</span><br><span class="line">      <span class="keyword">case</span> (index, rowValue) =&gt; <span class="keyword">if</span>(index == <span class="number">0</span>) rowValue.trim <span class="keyword">else</span> rowValue.toDouble</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//Row(foo,1.0,2.0) is correct</span></span><br><span class="line">    <span class="type">Row</span>(record: _*)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Sum-Different-Columns"><a href="#Sum-Different-Columns" class="headerlink" title="Sum Different Columns"></a>Sum Different Columns</h1><p>The code is as follow, it sums all the columns in each list to get a new column. For more detail you can refer to <a href="https://stackoverflow.com/questions/37624699/adding-a-column-of-rowsums-across-a-list-of-columns-in-spark-dataframe" target="_blank" rel="noopener">Adding a column of rowsums across a list of columns in Spark Dataframe
+</a>.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">timeUsageSummary</span></span>(</span><br><span class="line">    primaryNeedsColumns: <span class="type">List</span>[<span class="type">Column</span>],</span><br><span class="line">    workColumns: <span class="type">List</span>[<span class="type">Column</span>],</span><br><span class="line">    otherColumns: <span class="type">List</span>[<span class="type">Column</span>],</span><br><span class="line">    df: <span class="type">DataFrame</span></span><br><span class="line">  ): <span class="type">DataFrame</span> = &#123;</span><br><span class="line">    <span class="comment">// ... some unrealated codes</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">sum_</span></span>(cols: <span class="type">Column</span>*) = cols.foldLeft(lit(<span class="number">0</span>))(_ + _)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">val</span> primaryNeedsProjection: <span class="type">Column</span> = (sum_(primaryNeedsColumns: _*) / <span class="number">60</span>).as(<span class="string">"primaryNeeds"</span>)</span><br><span class="line">    <span class="keyword">val</span> workProjection: <span class="type">Column</span> = (sum_(workColumns: _*) / <span class="number">60</span>).as(<span class="string">"work"</span>)</span><br><span class="line">    <span class="keyword">val</span> otherProjection: <span class="type">Column</span> = (sum_(otherColumns: _*) / <span class="number">60</span>).as(<span class="string">"other"</span>)</span><br><span class="line">    df</span><br><span class="line">      .select(workingStatusProjection, sexProjection, ageProjection, primaryNeedsProjection, workProjection, otherProjection)</span><br><span class="line">      .where($<span class="string">"telfs"</span> &lt;= <span class="number">4</span>) <span class="comment">// Discard people who are not in labor force</span></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>By the way, the Column object does not contain any data. Instead, it contains the column name and the opeations associated with this column, in the form of SQL statements. When it is called by dataframe, these SQL statements will be executed.</p>
+</blockquote>
+<img src="https://bytebucket.org/LarryTaoWang/pictureofblog/raw/a8a037eb56415c8432b523e6358b28d43ca7065d/Spark/SparkSQL-Column.png">
+
+<h1 id="Convert-DataFrame-to-DataSet"><a href="#Convert-DataFrame-to-DataSet" class="headerlink" title="Convert DataFrame to DataSet"></a>Convert DataFrame to DataSet</h1><p><a href="https://stackoverflow.com/questions/44516627/how-to-convert-a-dataframe-to-dataset-in-apache-spark-in-scala" target="_blank" rel="noopener">Convert DataFrame to DataSet</a></p>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><blockquote>
+<p>[1]<a href="https://stackoverflow.com/questions/37624699/adding-a-column-of-rowsums-across-a-list-of-columns-in-spark-dataframe" target="_blank" rel="noopener">Is there a Scala equivalent of the Python list unpack (a.k.a. “*”) operator?
+</a><br>[2]<a href="https://stackoverflow.com/questions/37624699/adding-a-column-of-rowsums-across-a-list-of-columns-in-spark-dataframe" target="_blank" rel="noopener">Adding a column of rowsums across a list of columns in Spark Dataframe
+</a><br>[3]<a href="https://stackoverflow.com/questions/44516627/how-to-convert-a-dataframe-to-dataset-in-apache-spark-in-scala" target="_blank" rel="noopener">Convert DataFrame to DataSet</a></p>
+</blockquote>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://blog-pika.github.io/2017/12/25/Summary-for-a-Spark-SQL-Project/" data-id="cjyxovs6r000a6pm94ff5ii5l" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Scala/">Scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Spark/">Spark</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Spark-SQL/">Spark SQL</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/01/02/Notes-for-Huffman-Coding-Implementation/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          A Note for Scala Sequence Pattern Matching
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/12/23/A-Wrong-Kmeans-Implementation/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">A Wrong K-Means Implementation</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Coding-Notes/">Coding Notes</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Distributed-System/">Distributed System</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Weenix/">Weenix</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed-System/">Distributed System</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/File-System/">File System</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Fork/">Fork</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/K-Means/">K-Means</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Pattern-Matching/">Pattern Matching</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Process/">Process</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Scala/">Scala</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spark/">Spark</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spark-SQL/">Spark SQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Thread/">Thread</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Virtual-Memory/">Virtual Memory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Weenix/">Weenix</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C/" style="font-size: 20px;">C</a> <a href="/tags/Distributed-System/" style="font-size: 10px;">Distributed System</a> <a href="/tags/File-System/" style="font-size: 13.33px;">File System</a> <a href="/tags/Fork/" style="font-size: 10px;">Fork</a> <a href="/tags/K-Means/" style="font-size: 10px;">K-Means</a> <a href="/tags/Operating-System/" style="font-size: 20px;">Operating System</a> <a href="/tags/Pattern-Matching/" style="font-size: 10px;">Pattern Matching</a> <a href="/tags/Process/" style="font-size: 10px;">Process</a> <a href="/tags/Replication/" style="font-size: 10px;">Replication</a> <a href="/tags/Scala/" style="font-size: 16.67px;">Scala</a> <a href="/tags/Spark/" style="font-size: 13.33px;">Spark</a> <a href="/tags/Spark-SQL/" style="font-size: 10px;">Spark SQL</a> <a href="/tags/Thread/" style="font-size: 10px;">Thread</a> <a href="/tags/Virtual-Memory/" style="font-size: 10px;">Virtual Memory</a> <a href="/tags/Weenix/" style="font-size: 20px;">Weenix</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">July 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">April 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/07/01/Replicattion-101/">Replication 101</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/20/Weenix/Weenix09 - Summary/">Weenix09 - Summary</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/20/Weenix/Weenix08 - Fork/">Weenix08 - Fork</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/20/Weenix/Weenix07 - Shadow Object/">Weenix07 - Shadow Object</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/15/Weenix/Weenix06 - Debug anon_put()/">Weenix06 - Debug anon_put()</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 Developer Pikachu<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

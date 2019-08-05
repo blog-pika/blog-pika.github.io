@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>Weenix05 - Implementation of Virtual Memory | The Code and Sixpence</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Weenix is the kernel assignment of my OS course. I and my teammates Xiaowei Cheng, Yanghua Huang, Donghua Yin finishes all the assignment together, including designing, coding, reviewing, debugging.">
+<meta name="keywords" content="Weenix,Operating System,C">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Weenix05 - Implementation of Virtual Memory">
+<meta property="og:url" content="https://blog-pika.github.io/2018/04/15/Weenix/Weenix05 - Implementation of Virtual Memory/index.html">
+<meta property="og:site_name" content="The Code and Sixpence">
+<meta property="og:description" content="Weenix is the kernel assignment of my OS course. I and my teammates Xiaowei Cheng, Yanghua Huang, Donghua Yin finishes all the assignment together, including designing, coding, reviewing, debugging.">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://bitbucket.org/LarryTaoWang/pictureofblog/raw/master/Weenix/Weenix%20-%20Virtual%20Memory%20Overview/Overview%20of%20Virtual%20memory%20data%20strcure.png">
+<meta property="og:image" content="https://bitbucket.org/LarryTaoWang/pictureofblog/raw/master/Weenix/Weenix06%20-%20Implementation%20of%20Virtual%20Memory/Pagefault.png">
+<meta property="og:image" content="https://bitbucket.org/LarryTaoWang/pictureofblog/raw/master/Weenix/Weenix06%20-%20Implementation%20of%20Virtual%20Memory/How%20hello%20world%20execute.png">
+<meta property="og:updated_time" content="2019-06-19T01:19:30.736Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Weenix05 - Implementation of Virtual Memory">
+<meta name="twitter:description" content="Weenix is the kernel assignment of my OS course. I and my teammates Xiaowei Cheng, Yanghua Huang, Donghua Yin finishes all the assignment together, including designing, coding, reviewing, debugging.">
+<meta name="twitter:image" content="https://bitbucket.org/LarryTaoWang/pictureofblog/raw/master/Weenix/Weenix%20-%20Virtual%20Memory%20Overview/Overview%20of%20Virtual%20memory%20data%20strcure.png">
+  
+    <link rel="alternate" href="/atom.xml" title="The Code and Sixpence" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">The Code and Sixpence</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://blog-pika.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Weenix/Weenix05 - Implementation of Virtual Memory" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/04/15/Weenix/Weenix05 - Implementation of Virtual Memory/" class="article-date">
+  <time datetime="2018-04-15T07:00:01.000Z" itemprop="datePublished">2018-04-15</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Weenix/">Weenix</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Weenix05 - Implementation of Virtual Memory
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>Weenix is the kernel assignment of my OS course. I and my teammates Xiaowei Cheng, Yanghua Huang, Donghua Yin finishes all the assignment together, including designing, coding, reviewing, debugging. It is a great pleasure to work with and learn from them.</p>
+</blockquote>
+<h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>This blog illustrates some pitfalls and my understanding of some functions for implementing virtual memory for Weenix(exclude fork and copy-on-write). The overview of some basic components of virtual memory is presented by this picture.</p>
+<img src="https://bitbucket.org/LarryTaoWang/pictureofblog/raw/master/Weenix/Weenix%20-%20Virtual%20Memory%20Overview/Overview%20of%20Virtual%20memory%20data%20strcure.png">
+
+
+<h1 id="mmap-c"><a href="#mmap-c" class="headerlink" title="mmap.c"></a>mmap.c</h1><p>This file contains most of the function we need to manage vmmap, the linked list of vmareas. One pitfall is that the vma_off of vmarea is exclusive, so we need to be careful about whether we need to include the boundary vma_off in if statements or loop statements.</p>
+<h2 id="vmmap-map"><a href="#vmmap-map" class="headerlink" title="vmmap_map()"></a>vmmap_map()</h2><p>The comment says “If file is NULL an anon mmobj will be used to create a mapping 0’s.  If file is non-null that vnode’s file will be mapped in for the given range.” We are confused about what “create a mapping 0’s” means. Later we found out that when you create an anon object, you need to fill the page with all 0, otherwise you cannot pass the memory check. The logic for filling the page can be implemented in anoc.c.</p>
+<h2 id="vmmap-is-range-empty"><a href="#vmmap-is-range-empty" class="headerlink" title="vmmap_is_range_empty()"></a>vmmap_is_range_empty()</h2><p>The comment says: “Returns 1 if the given address space has no mappings for the given range, 0 otherwise”. We are confused about the definition at first. Later we found that it means that if the address space [startvfn, startvfn + npages) is not interleaving with any existed vmarea, return 1; otherwise return 0.</p>
+<h2 id="vmmap-read-and-vmmap-write"><a href="#vmmap-read-and-vmmap-write" class="headerlink" title="vmmap_read() and vmmap_write()"></a>vmmap_read() and vmmap_write()</h2><p>Special thanks to my friend Weiji Lin for helping me understand this function.</p>
+<p>These two functions are used by copy_to_user and copy_from_user, whose comments say “copy_to_user and copy_from_user are used to <strong>copy to and from the user space</strong> of the current process. They first check that the range of addresses has valid mappings, then call vmmap_read/write.”</p>
+<p>If we want to copy memory from one kernel-address to another kernel-address, we can simply call <strong>memcpy (destination, source, num)</strong>, because memory is continuous in kernel-space. However, if we want to copy data between user-address and kernel-address, things will become a little more complicated. The reason is that <strong>a count with starting address of buf may span multiple vmareas</strong>. One solution is <strong>not to copy data across page boundaries</strong>, which assures that the copy will not across different vmareas.</p>
+<p>The implementation of memcpy() in user-space locates in “kernel1/user/lib/libc/string.c”.</p>
+<h1 id="syscall-c"><a href="#syscall-c" class="headerlink" title="syscall.c"></a>syscall.c</h1><p>The logic of most of the sys_* functions is quite similar and easy to understand. According to the comment, you need to “page_alloc() a temporary buffer” and then “call do_read(), and copy_to_user() the read bytes”. Since page_alloc() only allocates one page, you have to do_read() and copy_to_user page by page.</p>
+<p>“copy_to_user” we used to copy the primitives, the “user_strdup” function is used to copy the string.</p>
+<h1 id="pagefault-c"><a href="#pagefault-c" class="headerlink" title="pagefault.c"></a>pagefault.c</h1><h2 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h2><p>When a pagefault happens, _pt_fault_handler() calls handle_pagefault() after doing some error checkings.<br>The outline of pt_fault_handler is as follow:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Use vmmap_lookup() to find the corresponding vmarea;</span></span><br><span class="line"><span class="comment">// Check whether the vmarea has the corresponding permission;</span></span><br><span class="line"><span class="comment">// Use pframe_lookup() to get the missing page frame;</span></span><br><span class="line"><span class="comment">// Call pt_map to have the new mapping placed into the appropriate page table;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Check-permission"><a href="#Check-permission" class="headerlink" title="Check permission"></a>Check permission</h2><p>The comment says “Make sure to check the permissions on the <strong>area</strong> to see if the process has permission to do [cause]” Be careful that it is the permission of <strong>vmarea</strong> that we need to check, rather than the permission of pframe.</p>
+<p>If the vmarea does not have the permission, we need to terminate the process, e.g., this vmarea is a text segment and we want to write to it. If we have the permission to write the vmarea, but the pframe is R/O, then it is time to do the copy-on-write. </p>
+<img src="https://bitbucket.org/LarryTaoWang/pictureofblog/raw/master/Weenix/Weenix06%20-%20Implementation%20of%20Virtual%20Memory/Pagefault.png">
+
+
+<h2 id="Copy-on-write"><a href="#Copy-on-write" class="headerlink" title="Copy-on-write"></a>Copy-on-write</h2><p>The comment says: “Now it is time to find the correct page (don’t forget about shadow objects, especially copy-on-write magic!). Make sure that if the user writes to the page it will be handled correctly.”</p>
+<p>Personally, this comment is a little misleading. We should not bother handling the copy-on-write logic at all, which should be implemented in shadow.c instead. The handle_pagefault() merely need to call pframe_lookup(). And thanks to the magic of polymorphism, the mmobj will do copy-on-write(or not) accordingly. </p>
+<h2 id="Kernel-Memory-and-User-Memory-Mapping"><a href="#Kernel-Memory-and-User-Memory-Mapping" class="headerlink" title="Kernel Memory and User Memory Mapping"></a>Kernel Memory and User Memory Mapping</h2><p>A pframe has 2 virtual address: one for the kernel space and one for the user-space, which are necessary for page fault. If we have a page fault at a user-space address, then the virtual address of this user-space is invalid, and the kernel cannot make use of it to write anything to the physical page. Instead, the kernel uses the kernel-space virtual address.</p>
+<p>pf-&gt;pf_addr is a kernel-space virtual address; the page fault address (vaddr) is a user-space virtual address. In the implementation of pagefault(), finally we will call pt_map(), then these 2 addresses map to the same physical page.</p>
+<h1 id="How-hello-world-is-executed"><a href="#How-hello-world-is-executed" class="headerlink" title="How hello world is executed"></a>How hello world is executed</h1><img src="https://bitbucket.org/LarryTaoWang/pictureofblog/raw/master/Weenix/Weenix06%20-%20Implementation%20of%20Virtual%20Memory/How%20hello%20world%20execute.png">
+
+
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><blockquote>
+<p>[1] <em>Operating Systems in Depth</em>, Thomas W. Doeppner, Brown University<br>[2] <a href="https://cs.brown.edu/courses/cs167/content/weenix-doc.pdf" target="_blank" rel="noopener">Weenix Documentation
+</a></p>
+</blockquote>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://blog-pika.github.io/2018/04/15/Weenix/Weenix05 - Implementation of Virtual Memory/" data-id="cjyxovs82001l6pm99havhubv" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/">C</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Weenix/">Weenix</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/04/15/Weenix/Weenix06 - Debug anon_put()/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Weenix06 - Debug anon_put()
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/04/15/Weenix/Weenix04 - Virtual Memeory Overview/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Weenix04 - Virtual Memory Overview</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Coding-Notes/">Coding Notes</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Distributed-System/">Distributed System</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Weenix/">Weenix</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed-System/">Distributed System</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/File-System/">File System</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Fork/">Fork</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/K-Means/">K-Means</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Pattern-Matching/">Pattern Matching</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Process/">Process</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Scala/">Scala</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spark/">Spark</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spark-SQL/">Spark SQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Thread/">Thread</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Virtual-Memory/">Virtual Memory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Weenix/">Weenix</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C/" style="font-size: 20px;">C</a> <a href="/tags/Distributed-System/" style="font-size: 10px;">Distributed System</a> <a href="/tags/File-System/" style="font-size: 13.33px;">File System</a> <a href="/tags/Fork/" style="font-size: 10px;">Fork</a> <a href="/tags/K-Means/" style="font-size: 10px;">K-Means</a> <a href="/tags/Operating-System/" style="font-size: 20px;">Operating System</a> <a href="/tags/Pattern-Matching/" style="font-size: 10px;">Pattern Matching</a> <a href="/tags/Process/" style="font-size: 10px;">Process</a> <a href="/tags/Replication/" style="font-size: 10px;">Replication</a> <a href="/tags/Scala/" style="font-size: 16.67px;">Scala</a> <a href="/tags/Spark/" style="font-size: 13.33px;">Spark</a> <a href="/tags/Spark-SQL/" style="font-size: 10px;">Spark SQL</a> <a href="/tags/Thread/" style="font-size: 10px;">Thread</a> <a href="/tags/Virtual-Memory/" style="font-size: 10px;">Virtual Memory</a> <a href="/tags/Weenix/" style="font-size: 20px;">Weenix</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">July 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">April 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/07/01/Replicattion-101/">Replication 101</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/20/Weenix/Weenix09 - Summary/">Weenix09 - Summary</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/20/Weenix/Weenix08 - Fork/">Weenix08 - Fork</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/20/Weenix/Weenix07 - Shadow Object/">Weenix07 - Shadow Object</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/15/Weenix/Weenix06 - Debug anon_put()/">Weenix06 - Debug anon_put()</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 Developer Pikachu<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

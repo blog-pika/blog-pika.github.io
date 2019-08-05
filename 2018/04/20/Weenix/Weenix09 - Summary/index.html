@@ -5,15 +5,22 @@
   
 
   
-  <title>Archives: 2019 | The Code and Sixpence</title>
+  <title>Weenix09 - Summary | The Code and Sixpence</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="The Code and Sixpence">
-<meta property="og:url" content="https://blog-pika.github.io/archives/2019/index.html">
+  <meta name="description" content="OverviewWeenix is the kernel assignment of my OS course. I and my teammates Xiaowei Cheng, Yanghua, Huang, Donghua Yin finishes all the assignment together, including designing, coding, reviewing, deb">
+<meta name="keywords" content="Weenix,Operating System,C">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Weenix09 - Summary">
+<meta property="og:url" content="https://blog-pika.github.io/2018/04/20/Weenix/Weenix09 - Summary/index.html">
 <meta property="og:site_name" content="The Code and Sixpence">
+<meta property="og:description" content="OverviewWeenix is the kernel assignment of my OS course. I and my teammates Xiaowei Cheng, Yanghua, Huang, Donghua Yin finishes all the assignment together, including designing, coding, reviewing, deb">
 <meta property="og:locale" content="default">
+<meta property="og:image" content="https://bitbucket.org/LarryTaoWang/pictureofblog/raw/master/Weenix/Weenix10-Summary/Demo.png">
+<meta property="og:updated_time" content="2019-06-19T01:19:30.737Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="The Code and Sixpence">
+<meta name="twitter:title" content="Weenix09 - Summary">
+<meta name="twitter:description" content="OverviewWeenix is the kernel assignment of my OS course. I and my teammates Xiaowei Cheng, Yanghua, Huang, Donghua Yin finishes all the assignment together, including designing, coding, reviewing, deb">
+<meta name="twitter:image" content="https://bitbucket.org/LarryTaoWang/pictureofblog/raw/master/Weenix/Weenix10-Summary/Demo.png">
   
     <link rel="alternate" href="/atom.xml" title="The Code and Sixpence" type="application/atom+xml">
   
@@ -60,40 +67,72 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2019" class="archive-year">2019</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2019/07/01/Replicattion-101/" class="archive-article-date">
-  <time datetime="2019-07-01T07:00:00.000Z" itemprop="datePublished">Jul 1</time>
+        <section id="main"><article id="post-Weenix/Weenix09 - Summary" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/04/20/Weenix/Weenix09 - Summary/" class="article-date">
+  <time datetime="2018-04-20T07:00:02.000Z" itemprop="datePublished">2018-04-20</time>
 </a>
-      
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Weenix/">Weenix</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/07/01/Replicattion-101/">Replication 101</a>
+    <h1 class="article-title" itemprop="name">
+      Weenix09 - Summary
     </h1>
   
 
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
-  
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h1><p>Weenix is the kernel assignment of my OS course. I and my teammates Xiaowei Cheng, Yanghua, Huang, Donghua Yin finishes all the assignment together, including designing, coding, reviewing, debugging. It is a great pleasure to work with and learn from them. </p>
+<p>The kernel assignment is divided into three parts. And in these blogs, I record some important ideas to understand the kernel, plus some mistakes we made.</p>
+<h1 id="Catalogue"><a href="#Catalogue" class="headerlink" title="Catalogue"></a>Catalogue</h1><p>The first part of the assignment is to implement the completed life cycle of threads and processes with FIFO scheduling policy, scheduling algorithm, and mutex. You can refer to this blog:<br><a href="http://blog.taowang.cloud/2018/03/01/Weenix/Weenix01%20-%20Process-and-Thread/" target="_blank" rel="noopener">Weenix01 - Process and Thread</a></p>
+<p>The second part of the assignment is to build up a Virtual File System layer to bridge between the OS kernel and various Actual File Systems. You can refer to these blogs:<br><a href="http://blog.taowang.cloud/2018/04/02/Weenix/Weenix02%20-%20Virtual-File-System-Overview/" target="_blank" rel="noopener">Weenix02 - Virtual File System Overview</a><br><a href="http://blog.taowang.cloud/2018/04/02/Weenix/Weenix03%20-%20Debug-Virtual-File-System/" target="_blank" rel="noopener">Weenix03 - Debug Virtual File System</a></p>
+<p>The third part of the assignment is to construct Virtual Memory module to support user-level program, which supports features such as system call, demanding pages, copy-on-write, and fork. You can refer to these blogs:<br><a href="http://blog.taowang.cloud/2018/04/15/Weenix/Weenix04%20-%20Virtual%20Memeory%20Overview/" target="_blank" rel="noopener">Weenix04 - Virtual Memory Overview</a><br><a href="http://blog.taowang.cloud/2018/04/15/Weenix/Weenix05%20-%20Implementation%20of%20Virtual%20Memory/" target="_blank" rel="noopener">Weenix05 - Implementation of Virtual Memory</a><br><a href="http://blog.taowang.cloud/2018/04/15/Weenix/Weenix06%20-%20Debug%20anon_put()/" target="_blank" rel="noopener">Weenix06 - Debug anon_put()</a><br><a href="http://blog.taowang.cloud/2018/04/20/Weenix/Weenix07%20-%20Shadow%20Object/" target="_blank" rel="noopener">Weenix07 - Shadow Object</a><br><a href="http://blog.taowang.cloud/2018/04/20/Weenix/Weenix08%20-%20Fork/" target="_blank" rel="noopener">Weenix08 - Fork</a>  </p>
+<h1 id="Demo"><a href="#Demo" class="headerlink" title="Demo"></a>Demo</h1><p>After finishing the Weenix Kernel, you will get a user-space shell which is able to run the command and execute the binary file. The screenshot of the shell is like the picture below:<br><img src="https://bitbucket.org/LarryTaoWang/pictureofblog/raw/master/Weenix/Weenix10-Summary/Demo.png"></p>
 
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://blog-pika.github.io/2018/04/20/Weenix/Weenix09 - Summary/" data-id="cjyxovs8a001v6pm95gzky231" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/">C</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Weenix/">Weenix</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2019/07/01/Replicattion-101/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Replication 101
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/04/20/Weenix/Weenix08 - Fork/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Weenix08 - Fork</div>
+    </a>
+  
+</nav>
+
+  
+</article>
 
 </section>
         
