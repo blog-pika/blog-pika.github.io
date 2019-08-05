@@ -5,15 +5,17 @@ tags: [Replication, Distributed System]
 categories: [Distributed System]
 ---
 
-This blog is my reading notes for _Designing Data-Intensive Applications_, Chapter 05: Replication.
+## Abstract  
 
-## Overview
+This blog is my reading notes for _Designing Data-Intensive Applications_, Chapter 05: Replication.
 
 `Replication` means keeping a copy of the **same data** on multiple machines that are connected via a network. It has following benefits:
 
 * **High availability**: Keeping the system running, even when one/several machines goes down
 * **Latency**: Placing data geographically close to users, so that users can interact with it faster
 * **Scalability**: Being able to handle a higher volume of **reads** than a single machine could handle, by performing reads on replicas
+
+<!-- more -->
 
 However, keeping data consistent between replicas are not as simple as it looks. We need to consider the following issues: node failures; unreliable networks; and tradeoffs around replica consistency, durability, availability, and latency. Let's look at them one by one:
 
@@ -50,13 +52,13 @@ There are three main approaches to replication and each approach has advantages 
 2. The other replicas are known as followers . Whenever the leader writes new data to its local storage, it also sends the data change to all of its followers. Each follower takes the log from the leader and updates its local copy of the database accordingly.
 3. When a client wants to read from the database, it can query either the leader or any of the followers. However, writes are only accepted on the leader.
 
-![Leader-based replication](../images/DDIA/Ch5-Single_Leader-Application.png)
+![Leader-based replication](/images/DDIA/Ch5-Single_Leader-Application.png)
 
 ### Multi-leader replication
 
 Clients send each write to one of several leader nodes, any of which can accept writes. The leaders send streams of data change events to each other and to any follower nodes.
 
-![Multi-leader replication across multiple data centers](../images/DDIA/Ch5-Multi-leader-replication.png)
+![Multi-leader replication across multiple data centers](/images/DDIA/Ch5-Multi-leader-replication.png)
 
 Multi-leader replication has advantage on performance, tolerance of datacenter outages, tolerance of network problems.
 However, it rarely makes sense to use a multi-leader setup within a single datacenter, because the benefits rarely outweigh the added complexity: the same data may be concurrently modified in two different datacenters, and those write conflicts must be resolved.
