@@ -15,13 +15,13 @@
 <meta property="og:site_name" content="The Code and Sixpence">
 <meta property="og:description" content="This blog is my reading notes for Designing Data-Intensive Applications, Chapter 05: Replication. OverviewReplication means keeping a copy of the same data on multiple machines that are connected via">
 <meta property="og:locale" content="default">
-<meta property="og:image" content="https://blog-pika.github.io/2019/07/01/_images/DDIA/Ch5-Single_Leader-Application.png">
-<meta property="og:image" content="https://blog-pika.github.io/2019/07/01/_images/DDIA/Ch5-Multi-leader-replication.png">
-<meta property="og:updated_time" content="2019-08-03T17:52:11.164Z">
+<meta property="og:image" content="https://blog-pika.github.io/2019/07/01/images/DDIA/Ch5-Single_Leader-Application.png">
+<meta property="og:image" content="https://blog-pika.github.io/2019/07/01/images/DDIA/Ch5-Multi-leader-replication.png">
+<meta property="og:updated_time" content="2019-08-05T01:07:45.555Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Replication 101">
 <meta name="twitter:description" content="This blog is my reading notes for Designing Data-Intensive Applications, Chapter 05: Replication. OverviewReplication means keeping a copy of the same data on multiple machines that are connected via">
-<meta name="twitter:image" content="https://blog-pika.github.io/2019/07/01/_images/DDIA/Ch5-Single_Leader-Application.png">
+<meta name="twitter:image" content="https://blog-pika.github.io/2019/07/01/images/DDIA/Ch5-Single_Leader-Application.png">
   
     <link rel="alternate" href="/atom.xml" title="The Code and Sixpence" type="application/atom+xml">
   
@@ -130,9 +130,9 @@
 <li>The other replicas are known as followers . Whenever the leader writes new data to its local storage, it also sends the data change to all of its followers. Each follower takes the log from the leader and updates its local copy of the database accordingly.</li>
 <li>When a client wants to read from the database, it can query either the leader or any of the followers. However, writes are only accepted on the leader.</li>
 </ol>
-<p><img src="../_images/DDIA/Ch5-Single_Leader-Application.png" alt="Leader-based replication"></p>
+<p><img src="../images/DDIA/Ch5-Single_Leader-Application.png" alt="Leader-based replication"></p>
 <h3 id="Multi-leader-replication"><a href="#Multi-leader-replication" class="headerlink" title="Multi-leader replication"></a>Multi-leader replication</h3><p>Clients send each write to one of several leader nodes, any of which can accept writes. The leaders send streams of data change events to each other and to any follower nodes.</p>
-<p><img src="../_images/DDIA/Ch5-Multi-leader-replication.png" alt="Multi-leader replication across multiple data centers"></p>
+<p><img src="../images/DDIA/Ch5-Multi-leader-replication.png" alt="Multi-leader replication across multiple data centers"></p>
 <p>Multi-leader replication has advantage on performance, tolerance of datacenter outages, tolerance of network problems.<br>However, it rarely makes sense to use a multi-leader setup within a single datacenter, because the benefits rarely outweigh the added complexity: the same data may be concurrently modified in two different datacenters, and those write conflicts must be resolved.</p>
 <p>Here are some common use cases for multi-leader replication:</p>
 <ul>
@@ -196,7 +196,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://blog-pika.github.io/2019/07/01/Replicattion-101/" data-id="cjyxovs7f001a6pm98wl9huhj" class="article-share-link">Share</a>
+      <a data-url="https://blog-pika.github.io/2019/07/01/Replicattion-101/" data-id="cjyxp3xdc001ajqm9mm2qcdde" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Distributed-System/">Distributed System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Replication/">Replication</a></li></ul>

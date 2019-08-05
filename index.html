@@ -124,9 +124,9 @@
 <li>The other replicas are known as followers . Whenever the leader writes new data to its local storage, it also sends the data change to all of its followers. Each follower takes the log from the leader and updates its local copy of the database accordingly.</li>
 <li>When a client wants to read from the database, it can query either the leader or any of the followers. However, writes are only accepted on the leader.</li>
 </ol>
-<p><img src="../_images/DDIA/Ch5-Single_Leader-Application.png" alt="Leader-based replication"></p>
+<p><img src="../images/DDIA/Ch5-Single_Leader-Application.png" alt="Leader-based replication"></p>
 <h3 id="Multi-leader-replication"><a href="#Multi-leader-replication" class="headerlink" title="Multi-leader replication"></a>Multi-leader replication</h3><p>Clients send each write to one of several leader nodes, any of which can accept writes. The leaders send streams of data change events to each other and to any follower nodes.</p>
-<p><img src="../_images/DDIA/Ch5-Multi-leader-replication.png" alt="Multi-leader replication across multiple data centers"></p>
+<p><img src="../images/DDIA/Ch5-Multi-leader-replication.png" alt="Multi-leader replication across multiple data centers"></p>
 <p>Multi-leader replication has advantage on performance, tolerance of datacenter outages, tolerance of network problems.<br>However, it rarely makes sense to use a multi-leader setup within a single datacenter, because the benefits rarely outweigh the added complexity: the same data may be concurrently modified in two different datacenters, and those write conflicts must be resolved.</p>
 <p>Here are some common use cases for multi-leader replication:</p>
 <ul>
@@ -190,7 +190,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://blog-pika.github.io/2019/07/01/Replicattion-101/" data-id="cjyxovs7f001a6pm98wl9huhj" class="article-share-link">Share</a>
+      <a data-url="https://blog-pika.github.io/2019/07/01/Replicattion-101/" data-id="cjyxp3xdc001ajqm9mm2qcdde" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Distributed-System/">Distributed System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Replication/">Replication</a></li></ul>
@@ -238,7 +238,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://blog-pika.github.io/2018/04/20/Weenix/Weenix09 - Summary/" data-id="cjyxovs8a001v6pm95gzky231" class="article-share-link">Share</a>
+      <a data-url="https://blog-pika.github.io/2018/04/20/Weenix/Weenix09 - Summary/" data-id="cjyxp3xe9001vjqm9rswa6kjm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/">C</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Weenix/">Weenix</a></li></ul>
@@ -302,7 +302,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://blog-pika.github.io/2018/04/20/Weenix/Weenix08 - Fork/" data-id="cjyxovs89001t6pm99z0o6c6n" class="article-share-link">Share</a>
+      <a data-url="https://blog-pika.github.io/2018/04/20/Weenix/Weenix08 - Fork/" data-id="cjyxp3xe8001tjqm9maz2uedy" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/">C</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Fork/">Fork</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Weenix/">Weenix</a></li></ul>
@@ -374,7 +374,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://blog-pika.github.io/2018/04/20/Weenix/Weenix07 - Shadow Object/" data-id="cjyxovs87001p6pm9md9e23yj" class="article-share-link">Share</a>
+      <a data-url="https://blog-pika.github.io/2018/04/20/Weenix/Weenix07 - Shadow Object/" data-id="cjyxp3xe6001pjqm96my89o07" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/">C</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Weenix/">Weenix</a></li></ul>
@@ -440,7 +440,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://blog-pika.github.io/2018/04/15/Weenix/Weenix06 - Debug anon_put()/" data-id="cjyxovs85001o6pm9n4121tpc" class="article-share-link">Share</a>
+      <a data-url="https://blog-pika.github.io/2018/04/15/Weenix/Weenix06 - Debug anon_put()/" data-id="cjyxp3xe5001ojqm9zxxx6uzz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/">C</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Weenix/">Weenix</a></li></ul>
@@ -517,7 +517,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://blog-pika.github.io/2018/04/15/Weenix/Weenix05 - Implementation of Virtual Memory/" data-id="cjyxovs82001l6pm99havhubv" class="article-share-link">Share</a>
+      <a data-url="https://blog-pika.github.io/2018/04/15/Weenix/Weenix05 - Implementation of Virtual Memory/" data-id="cjyxp3xdz001kjqm9kpoov6r0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/">C</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Weenix/">Weenix</a></li></ul>
@@ -591,7 +591,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://blog-pika.github.io/2018/04/15/Weenix/Weenix04 - Virtual Memeory Overview/" data-id="cjyxovs80001k6pm9sptrh8qf" class="article-share-link">Share</a>
+      <a data-url="https://blog-pika.github.io/2018/04/15/Weenix/Weenix04 - Virtual Memeory Overview/" data-id="cjyxp3xe1001ljqm903ba069i" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/">C</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Virtual-Memory/">Virtual Memory</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Weenix/">Weenix</a></li></ul>
@@ -672,7 +672,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://blog-pika.github.io/2018/04/02/Weenix/Weenix03 - Debug-Virtual-File-System/" data-id="cjyxovs7y001j6pm957anfwzk" class="article-share-link">Share</a>
+      <a data-url="https://blog-pika.github.io/2018/04/02/Weenix/Weenix03 - Debug-Virtual-File-System/" data-id="cjyxp3xdw001jjqm9kpb62viw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/">C</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/File-System/">File System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Weenix/">Weenix</a></li></ul>
@@ -749,7 +749,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://blog-pika.github.io/2018/04/02/Weenix/Weenix02 - Virtual-File-System-Overview/" data-id="cjyxovs7u001g6pm9oa1ou2y8" class="article-share-link">Share</a>
+      <a data-url="https://blog-pika.github.io/2018/04/02/Weenix/Weenix02 - Virtual-File-System-Overview/" data-id="cjyxp3xdu001gjqm9kmlgh35h" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/">C</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/File-System/">File System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Weenix/">Weenix</a></li></ul>
@@ -826,7 +826,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://blog-pika.github.io/2018/03/01/Weenix/Weenix01 - Process-and-Thread/" data-id="cjyxovs7r001f6pm92wfpkrg6" class="article-share-link">Share</a>
+      <a data-url="https://blog-pika.github.io/2018/03/01/Weenix/Weenix01 - Process-and-Thread/" data-id="cjyxp3xdt001fjqm94h0af863" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/">C</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Operating-System/">Operating System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Process/">Process</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Thread/">Thread</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Weenix/">Weenix</a></li></ul>
