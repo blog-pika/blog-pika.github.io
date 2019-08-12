@@ -13,19 +13,26 @@
   <!-- PACE Progress Bar START -->
 
   
-  <title>The Code and Sixpence</title>
+  <title>ddia - ch8 - pitfalls in distributed system | The Code and Sixpence</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
+  <meta name="keywords" content="Distributed SystemDDIA">
   
   
   
-  <meta property="og:type" content="website">
-<meta property="og:title" content="The Code and Sixpence">
-<meta property="og:url" content="https://blog-pika.github.io/index.html">
+  
+  <meta name="description" content="AbstractThis blog is my reading notes for Designing Data-Intensive Applications, Chapter 08: The Trouble With Distributed System. Working with distributed systems is fundamentally different from writi">
+<meta name="keywords" content="Distributed System,DDIA">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DDIA - Ch8 - Pitfalls in Distributed System">
+<meta property="og:url" content="https://blog-pika.github.io/2019/08/11/DDIA/DDIA-Ch8-Pitfalls-in-distribuetd-system/index.html">
 <meta property="og:site_name" content="The Code and Sixpence">
+<meta property="og:description" content="AbstractThis blog is my reading notes for Designing Data-Intensive Applications, Chapter 08: The Trouble With Distributed System. Working with distributed systems is fundamentally different from writi">
 <meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-08-12T05:59:15.199Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="The Code and Sixpence">
+<meta name="twitter:title" content="DDIA - Ch8 - Pitfalls in Distributed System">
+<meta name="twitter:description" content="AbstractThis blog is my reading notes for Designing Data-Intensive Applications, Chapter 08: The Trouble With Distributed System. Working with distributed systems is fundamentally different from writi">
   
     <link rel="alternate" href="/atom.xml" title="The Code and Sixpence" type="application/atom+xml">
   
@@ -75,7 +82,7 @@ var themeMenus = {};
 </script>
 
 
-  <body>
+  <body data-spy="scroll" data-target="#toc" data-offset="50">
 
 
   <header id="allheader" class="site-header" role="banner">
@@ -151,17 +158,15 @@ var themeMenus = {};
             
       <div id="content" class="outer">
         
-          <section id="main">
-  
-    <article id="post-DDIA/DDIA-Ch8-Pitfalls-in-distribuetd-system"  class="article article-type-post" itemscope itemprop="blogPost" >
+          <section id="main" style="float:none;"><article id="post-DDIA/DDIA-Ch8-Pitfalls-in-distribuetd-system" style="width: 66%; float:left;" class="article article-type-post" itemscope itemprop="blogPost" >
   <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
     
     
       <header class="article-header">
         
   
-    <h1 class="thumb" itemprop="name">
-      <a class="article-title" href="/2019/08/11/DDIA/DDIA-Ch8-Pitfalls-in-distribuetd-system/">DDIA - Ch8 - Pitfalls in Distributed System</a>
+    <h1 class="thumb" class="article-title" itemprop="name">
+      DDIA - Ch8 - Pitfalls in Distributed System
     </h1>
   
 
@@ -174,6 +179,10 @@ var themeMenus = {};
 	</a>
 
       
+	<span id="busuanzi_container_page_pv">
+	  本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+	</span>
+
     </div>
     <div class="article-entry" itemprop="articleBody">
       
@@ -246,282 +255,61 @@ var themeMenus = {};
       
             
       
+        
+	<section id="comments" class="comment">
+	  <div id="disqus_thread">
+	  <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	  </div>
+	</section>
+
+	<script type="text/javascript">
+	var disqus_shortname = 'disqus_t7ZVi0Vi0o';
+	(function(){
+	  var dsq = document.createElement('script');
+	  dsq.type = 'text/javascript';
+	  dsq.async = true;
+	  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	}());
+	(function(){
+	  var dsq = document.createElement('script');
+	  dsq.type = 'text/javascript';
+	  dsq.async = true;
+	  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+	  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	}());
+	</script>
+
+
+      
     </footer>
   </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2019/08/05/DDIA/DDIA-Ch6-Partition/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">DDIA - Ch6 - Partition</div>
+    </a>
+  
+</nav>
+
   
 </article>
 
 <!-- Table of Contents -->
 
+  <aside id="sidebar">
+    <div id="toc" class="toc-article" style="overflow-y: scroll; max-width: 28%;">
+    <strong class="toc-title">Contents</strong>
     
-
-  
-    <article id="post-DDIA/DDIA-Ch6-Partition"  class="article article-type-post" itemscope itemprop="blogPost" >
-  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
+      <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Abstract"><span class="nav-number">1.</span> <span class="nav-text">Abstract</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Typical-UnReliable-Component"><span class="nav-number">2.</span> <span class="nav-text">Typical UnReliable Component</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Unreliable-Network"><span class="nav-number">2.1.</span> <span class="nav-text">Unreliable Network</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Unreliable-Clock"><span class="nav-number">2.2.</span> <span class="nav-text">Unreliable Clock</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Process-Pause"><span class="nav-number">2.3.</span> <span class="nav-text">Process Pause</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Challenges-in-Distributed-System"><span class="nav-number">3.</span> <span class="nav-text">Challenges in Distributed System</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#How-to-know-the-Truth"><span class="nav-number">4.</span> <span class="nav-text">How to know the Truth</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#System-Model-and-Algorithms-Scope"><span class="nav-number">5.</span> <span class="nav-text">System Model and Algorithms Scope</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reference"><span class="nav-number">6.</span> <span class="nav-text">Reference</span></a></li></ol>
     
-    
-      <header class="article-header">
-        
-  
-    <h1 class="thumb" itemprop="name">
-      <a class="article-title" href="/2019/08/05/DDIA/DDIA-Ch6-Partition/">DDIA - Ch6 - Partition</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-meta">
-      
-	Posted on <a href="/2019/08/05/DDIA/DDIA-Ch6-Partition/" class="article-date">
-	  <time datetime="2019-08-05T07:00:00.000Z" itemprop="datePublished">August 5, 2019</time>
-	</a>
-
-      
     </div>
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-
-          
-            <div class="entry-summary" style="margin-left:0;">
-            AbstractThis blog is my reading notes for Designing Data-Intensive Applications, Chapter 06: Partition.
-Partitioning means splitting a large dataset into smaller subsets, which are then placed on different nodes in a shared-nothing cluster. It is necessary when you have so much data that storing and processing it on a single machine is no longer...
-          
-
-        
-          <p class="article-more-link">
-            <a href="/2019/08/05/DDIA/DDIA-Ch6-Partition/#more">Continue Reading →</a>
-          </p>
-        </div>
-      
-    </div>
-    <footer class="entry-meta entry-footer">
-      
-	<span class="ico-folder"></span>
-    <a class="article-category-link" href="/categories/Reading-Notes/">Reading Notes</a>, <a class="article-category-link" href="/categories/Reading-Notes/Designing-Data-Intensive-Applications/">Designing Data-Intensive Applications</a>
-
-      
-  <span class="ico-tags"></span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DDIA/">DDIA</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Distributed-System/">Distributed System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Partition/">Partition</a></li></ul>
-
-      
-            
-      
-    </footer>
-  </div>
-  
-</article>
-
-<!-- Table of Contents -->
-
-    
-
-  
-    <article id="post-DDIA/DDIA-Ch5-Replicattion"  class="article article-type-post" itemscope itemprop="blogPost" >
-  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="thumb" itemprop="name">
-      <a class="article-title" href="/2019/08/01/DDIA/DDIA-Ch5-Replicattion/">DDIA - Ch8 - Replication</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-meta">
-      
-	Posted on <a href="/2019/08/01/DDIA/DDIA-Ch5-Replicattion/" class="article-date">
-	  <time datetime="2019-08-01T07:00:00.000Z" itemprop="datePublished">August 1, 2019</time>
-	</a>
-
-      
-    </div>
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-
-          
-            <div class="entry-summary" style="margin-left:0;">
-            AbstractThis blog is my reading notes for Designing Data-Intensive Applications, Chapter 05: Replication.
-Replication means keeping a copy of the same data on multiple machines that are connected via a network. It has following benefits:
-
-High availability: Keeping the system running, even when one/several machines goes down
-Latency: Placing dat...
-          
-
-        
-          <p class="article-more-link">
-            <a href="/2019/08/01/DDIA/DDIA-Ch5-Replicattion/#more">Continue Reading →</a>
-          </p>
-        </div>
-      
-    </div>
-    <footer class="entry-meta entry-footer">
-      
-	<span class="ico-folder"></span>
-    <a class="article-category-link" href="/categories/Reading-Notes/">Reading Notes</a>, <a class="article-category-link" href="/categories/Reading-Notes/Designing-Data-Intensive-Applications/">Designing Data-Intensive Applications</a>
-
-      
-  <span class="ico-tags"></span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DDIA/">DDIA</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Distributed-System/">Distributed System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Replication/">Replication</a></li></ul>
-
-      
-            
-      
-    </footer>
-  </div>
-  
-</article>
-
-<!-- Table of Contents -->
-
-    
-
-  
-
-
+  </aside>
 </section>
-          <aside id="sidebar">
-  
-    <div class="widget-wrap" style="margin: 20px 0;">
-	<div id="search-form-wrap">
-
-    <form class="search-form">
-        <label style="width: 75%;">
-            <span class="screen-reader-text">Search for:</span>
-            <input type="search" class="search-field" style="height: 42px;" placeholder=" Search…" value="" name="s" title="Search for:">
-        </label>
-        <input type="submit" class="search-form-submit" value="Search">
-    </form>
-    <div class="ins-search">
-    <div class="ins-search-mask"></div>
-    <div class="ins-search-container">
-        <div class="ins-input-wrapper">
-            <input type="text" class="ins-search-input" placeholder="Type something..."/>
-            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
-        </div>
-        <div class="ins-section-wrapper">
-            <div class="ins-section-container"></div>
-        </div>
-    </div>
-</div>
-<script>
-(function (window) {
-    var INSIGHT_CONFIG = {
-        TRANSLATION: {
-            POSTS: 'Posts',
-            PAGES: 'Pages',
-            CATEGORIES: 'Categories',
-            TAGS: 'Tags',
-            UNTITLED: '(Untitled)',
-        },
-        ROOT_URL: '/',
-        CONTENT_URL: '/content.json',
-    };
-    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
-})(window);
-</script>
-<script src="/js/insight.js"></script>
-
-</div>
-</div>
-  
-    
-
-  
-    
-  <div class="widget_athemes_tabs">
-    <ul id="widget-tab" class="clearfix widget-tab-nav">
-      <li class="active"><a>Recent Posts</a></li>
-    </ul>
-    <div class="widget">
-      <ul>
-        
-          <li class="clearfix">
-
-            
-              <div class="widget-entry-summary" style="margin: 0;">
-            
-
-              <h6 style="margin: 0;"><a href="/2019/08/11/DDIA/DDIA-Ch8-Pitfalls-in-distribuetd-system/">DDIA - Ch8 - Pitfalls in Distributed System</a></h6>
-              <span>August 11, 2019</span>
-            </div>
-
-          </li>
-        
-          <li class="clearfix">
-
-            
-              <div class="widget-entry-summary" style="margin: 0;">
-            
-
-              <h6 style="margin: 0;"><a href="/2019/08/05/DDIA/DDIA-Ch6-Partition/">DDIA - Ch6 - Partition</a></h6>
-              <span>August 5, 2019</span>
-            </div>
-
-          </li>
-        
-          <li class="clearfix">
-
-            
-              <div class="widget-entry-summary" style="margin: 0;">
-            
-
-              <h6 style="margin: 0;"><a href="/2019/08/01/DDIA/DDIA-Ch5-Replicattion/">DDIA - Ch8 - Replication</a></h6>
-              <span>August 1, 2019</span>
-            </div>
-
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Categories</h3>
-    <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Reading-Notes/">Reading Notes</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Reading-Notes/Designing-Data-Intensive-Applications/">Designing Data-Intensive Applications</a><span class="category-list-count">3</span></li></ul></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
-    <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/DDIA/">DDIA</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed-System/">Distributed System</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Partition/">Partition</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
-    <div class="widget tagcloud">
-      <a href="/tags/DDIA/" style="font-size: 20px;">DDIA</a> <a href="/tags/Distributed-System/" style="font-size: 20px;">Distributed System</a> <a href="/tags/Partition/" style="font-size: 10px;">Partition</a> <a href="/tags/Replication/" style="font-size: 10px;">Replication</a>
-    </div>
-  </div>
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a><span class="archive-list-count">3</span></li></ul>
-    </div>
-  </div>
-
-
-  
-</aside>
         
       </div>
       <footer id="footer" class="site-footer">
