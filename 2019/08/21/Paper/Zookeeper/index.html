@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+
+  <!-- PACE Progress Bar START -->
+  
+    <script src="https://raw.githubusercontent.com/HubSpot/pace/v1.0.2/pace.min.js"></script>
+    <link rel="stylesheet" href="https://github.com/HubSpot/pace/raw/master/themes/orange/pace-theme-flash.css">
+  
+  
+
+  <!-- PACE Progress Bar START -->
+
+  
+  <title>zookeeper | The Code and Sixpence</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
+  <meta name="keywords" content="Zookeeper">
+  
+  
+  
+  
+  <meta name="description" content="This blog is my reading notes for Zookeeper. We can learn from this paper how to use consensus algorithm to build replicated services with high read throughput.">
+<meta name="keywords" content="Zookeeper">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Zookeeper">
+<meta property="og:url" content="https://blog-pika.github.io/2019/08/21/Paper/Zookeeper/index.html">
+<meta property="og:site_name" content="The Code and Sixpence">
+<meta property="og:description" content="This blog is my reading notes for Zookeeper. We can learn from this paper how to use consensus algorithm to build replicated services with high read throughput.">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://blog-pika.github.io/images/Paper/ZooKeeper-hierarchical-name-space.png">
+<meta property="og:image" content="https://blog-pika.github.io/images/Paper/Zookeeper-Components.png">
+<meta property="og:updated_time" content="2019-08-23T05:50:38.674Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Zookeeper">
+<meta name="twitter:description" content="This blog is my reading notes for Zookeeper. We can learn from this paper how to use consensus algorithm to build replicated services with high read throughput.">
+<meta name="twitter:image" content="https://blog-pika.github.io/images/Paper/ZooKeeper-hierarchical-name-space.png">
+  
+    <link rel="alternate" href="/atom.xml" title="The Code and Sixpence" type="application/atom+xml">
+  
+  <link rel="icon" href="/css/images/favicon.ico">
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans|Montserrat:700" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic" rel="stylesheet" type="text/css">
+  <link href="https://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+  <style type="text/css">
+    @font-face{font-family:futura-pt;src:url(https://use.typekit.net/af/9749f0/00000000000000000001008f/27/l?subset_id=2&fvd=n5) format("woff2");font-weight:500;font-style:normal;}
+    @font-face{font-family:futura-pt;src:url(https://use.typekit.net/af/90cf9f/000000000000000000010091/27/l?subset_id=2&fvd=n7) format("woff2");font-weight:500;font-style:normal;}
+    @font-face{font-family:futura-pt;src:url(https://use.typekit.net/af/8a5494/000000000000000000013365/27/l?subset_id=2&fvd=n4) format("woff2");font-weight:lighter;font-style:normal;}
+    @font-face{font-family:futura-pt;src:url(https://use.typekit.net/af/d337d8/000000000000000000010095/27/l?subset_id=2&fvd=i4) format("woff2");font-weight:400;font-style:italic;}</style>
+    
+  <link rel="stylesheet" id="athemes-headings-fonts-css" href="//fonts.googleapis.com/css?family=Yanone+Kaffeesatz%3A200%2C300%2C400%2C700&amp;ver=4.6.1" type="text/css" media="all">
+  <link rel="stylesheet" href="/css/style.css">
+
+  <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+
+  <!-- Bootstrap core CSS -->
+  <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/hiero.css">
+  <link rel="stylesheet" href="/css/glyphs.css">
+  
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/my.css">
+  <!-- Google Adsense -->
+  
+</head>
+</html>
+<script>
+var themeMenus = {};
+
+  themeMenus["/"] = "Home"; 
+
+  themeMenus["/archives"] = "Archives"; 
+
+  themeMenus["/categories"] = "Categories"; 
+
+  themeMenus["/tags"] = "Tags"; 
+
+  themeMenus["/about"] = "About"; 
+
+</script>
+
+
+  <body data-spy="scroll" data-target="#toc" data-offset="50">
+
+
+  <header id="allheader" class="site-header" role="banner">
+  <div class="clearfix container">
+      <div class="site-branding">
+
+          <h1 class="site-title">
+            
+              <a href="/" title="The Code and Sixpence" rel="home"> The Code and Sixpence </a>
+            
+          </h1>
+
+          
+            
+          <nav id="main-navigation" class="main-navigation" role="navigation">
+            <a class="nav-open">Menu</a>
+            <a class="nav-close">Close</a>
+            <div class="clearfix sf-menu">
+
+              <ul id="main-nav" class="nmenu sf-js-enabled">
+                    
+                      <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-1663"> <a class="" href="/">Home</a> </li>
+                    
+                      <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-1663"> <a class="" href="/archives">Archives</a> </li>
+                    
+                      <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-1663"> <a class="" href="/categories">Categories</a> </li>
+                    
+                      <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-1663"> <a class="" href="/tags">Tags</a> </li>
+                    
+                      <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-1663"> <a class="" href="/about">About</a> </li>
+                    
+              </ul>
+            </div>
+          </nav>
+
+
+      </div>
+  </div>
+</header>
+
+
+  <div id="originBgDiv" style="background: #fff; width: 100%;">
+
+      <div style="max-height:600px; overflow: hidden;  display: flex; display: -webkit-flex; align-items: center;">
+        <img id="originBg" width="100%" alt="" src="">
+      </div>
+
+  </div>
+
+  <script>
+  function setAboutIMG(){
+      var imgUrls = "css/images/pose.jpg,https://source.unsplash.com/collection/954550/1920x1080".split(",");
+      var random = Math.floor((Math.random() * imgUrls.length ));
+      if (imgUrls[random].startsWith('http') || imgUrls[random].indexOf('://') >= 0) {
+        document.getElementById("originBg").src=imgUrls[random];
+      } else {
+        document.getElementById("originBg").src='/' + imgUrls[random];
+      }
+  }
+  bgDiv=document.getElementById("originBgDiv");
+  if(location.pathname.match('about')){
+    setAboutIMG();
+    bgDiv.style.display='block';
+  }else{
+    bgDiv.style.display='none';
+  }
+  </script>
+
+
+
+  <div id="container">
+    <div id="wrap">
+            
+      <div id="content" class="outer">
+        
+          <section id="main" style="float:none;"><article id="post-Paper/Zookeeper" style="width: 66%; float:left;" class="article article-type-post" itemscope itemprop="blogPost" >
+  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="thumb" class="article-title" itemprop="name">
+      Zookeeper
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-meta">
+      
+	Posted on <a href="/2019/08/21/Paper/Zookeeper/" class="article-date">
+	  <time datetime="2019-08-21T07:00:00.000Z" itemprop="datePublished">August 21, 2019</time>
+	</a>
+
+      
+	<span id="busuanzi_container_page_pv">
+	  本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+	</span>
+
+    </div>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>This blog is my reading notes for Zookeeper. We can learn from this paper how to use consensus algorithm to build replicated services with high read throughput.</p>
+<a id="more"></a>
+
+<h2 id="Data-Model-and-API"><a href="#Data-Model-and-API" class="headerlink" title="Data Model and API"></a>Data Model and API</h2><p>ZooKeeper provides to its clients the abstraction of a set of data nodes (<code>znodes</code>), organized as a file system with only full data reads and writes API. Every znode maps to abstractions of the client application, typically corresponding to meta-data used for coordination purposes. All except for ephemeral znodes, can have children:</p>
+<ul>
+<li>Regular: Clients manipulate regular znodes by creating and deleting them explicitly</li>
+<li>Ephemeral: Clients create such znodes, and they either delete them explicitly, or let the system remove them automatically when the session that creates them terminates (deliberately or due to a failure)</li>
+</ul>
+<p><img src="/images/Paper/ZooKeeper-hierarchical-name-space.png" alt="ZooKeeper hierarchical name space"></p>
+<p>A client connects to ZooKeeper and initiates a session. Sessions have an associated timeout. ZooKeeper considers a client faulty if it does not receive anything from its session for more than that timeout. A session ends when clients explicitly close a session handle or ZooKeeper detects that a clients is faulty.</p>
+<p>When creating a new znode, a client can set a <code>sequential ﬂag</code>. Nodes created with the sequential flag set have the value of a monotonically increasing counter appended to its name.</p>
+<p>ZooKeeper also implements <code>watches</code> to allow clients to receive timely notifications of changes without requiring polling. When a client issues a read operation with a watch flag set, the operation completes as normal except that the server promises to notify the client when the information returned has changed. Watches are one-time triggers associated with a session; they are unregistered once triggered or the session closes. Watches indicate that a change has happened, but do not provide the change.</p>
+<p>The APIs are as follow:</p>
+<ul>
+<li><code>create(path, data, flags)</code>: Creates a znode with path name path, stores data[] in it, and returns the name of the new znode. flags can be regular/ephemeral +  sequential flag</li>
+<li><code>delete(path, version)</code>: Deletes the znode path if that znode is at the expected version</li>
+<li><code>exists(path, watch)</code>: Returns true if the znode with path name path exists, and returns false otherwise. The watch flag enables a client to set a watch on the znode</li>
+<li><code>getData(path, watch)</code>: Returns the data and meta-data, such as version information, associated with the znode. ZooKeeper does not set the watch if the znode does not exist</li>
+<li><code>setData(path, data, version)</code>: Writes data[] to znode path if the version number is the current version of the znode</li>
+<li><code>getChildren(path, watch)</code>: Returns the set of names of the children of a znode</li>
+<li><code>sync(path)</code>: Waits for all updates pending at the start</li>
+</ul>
+<p>Zookeeper provides a consistency model with ordering guarantees tailed for read heavy scenarios:</p>
+<ul>
+<li><code>Linearizable writes order</code>: all requests that update the state of ZooKeeper are serializable and respect precedence</li>
+<li><code>FIFO client order</code>: all requests from a given client are in the order that they were sent by the client.</li>
+<li><code>Notification ordering</code>: if a client is watching for a change, the client will see the notification event before it sees the new state of the system after the change is made</li>
+</ul>
+<p>It also provide additional two guarantees:</p>
+<ul>
+<li><code>liveness</code> and  guarantees: if a majority of ZooKeeper servers are active and communicating the service will be available</li>
+<li><code>durability</code>: if the ZooKeeper service responds successfully to a change request, that change persists across any number of failures as long as a quorum of servers is eventually able to recover.</li>
+</ul>
+<h2 id="Architecture"><a href="#Architecture" class="headerlink" title="Architecture"></a>Architecture</h2><p>The components of Zookeeper are as follow:</p>
+<p><img src="/images/Paper/Zookeeper-Components.png" alt="Components of ZooKeeper Service"></p>
+<h3 id="Write"><a href="#Write" class="headerlink" title="Write"></a>Write</h3><p>Write needs to be duplicated among servers, so it is expensive. When a write request comes:</p>
+<ol>
+<li>write requests are forwarded to leader</li>
+<li>leader calculates what the state of the system will be when the write is applied and transforms it into a transaction that captures this new state.</li>
+<li>followers receive message proposals consisting of state changes from the leader and agree upon state changes. ZAB uses by default simple majority quorums to decide on a proposal. ZAB guarantees that changes broadcast by a leader are delivered in the order they were sent and all changes from previous leaders are delivered to an established leader before it broadcasts its own changes.</li>
+</ol>
+<h3 id="Read"><a href="#Read" class="headerlink" title="Read"></a>Read</h3><p>A read operation is fast since it is read local data. The drawback is that a read operation may return a stale value because the local server may lag behind.</p>
+<p>For application requires latest data from the requesting server, Zookeeper implemented <code>sync</code>. The FIFO order guarantee of client operations together with the global guarantee of sync enables the result of the read operation to reflect any changes that happened before the sync was issued. We simply place the sync operation at the end of the queue of requests between the leader and the server executing the call to sync (not all servers). In order for this to work, the follower must be sure that the leader is still the leader. If there are pending transactions that commit, then the server does not suspect the leader. If the pending queue is empty, the leader needs to issue a null transaction to commit and orders the sync after that transaction.</p>
+<p>When session transfer from one server to another server, it should not see data in the past. Zookeeper client records the last transaction it has seen (zxid). If the client connects to a new server, that new server ensures that its view of the ZooKeeper data is at least as recent as the view of the client by checking the last zxid of the client against its last zxid. If the client has a more recent view than the server, the server does not reestablish the session with the client until the server has caught up. The client is guaranteed to be able to find another server that has a recent view of the system since the client only sees changes that have been replicated to a majority of the ZooKeeper servers.</p>
+<h3 id="Recovery"><a href="#Recovery" class="headerlink" title="Recovery"></a>Recovery</h3><p>When a ZooKeeper server recovers from a crash, it needs to recover snapshot + replay all delivered messages to recover state. ZooKeeper uses periodic snapshots and only requires redelivery of messages since the start of the snapshot. We call ZooKeeper snapshots fuzzy snapshots since we do not lock the ZooKeeper state to take the snapshot. Since the resulting fuzzy snapshot may have applied some subset of the state changes delivered during the generation of the snapshot, the result may not correspond to the state of ZooKeeper at any point in time. However, since state changes are idempotent, we can apply them twice as long as we apply the state changes in order.</p>
+<h2 id="Examples-of-primitives"><a href="#Examples-of-primitives" class="headerlink" title="Examples of primitives"></a>Examples of primitives</h2><p>ZooKeeper API can be used to implement more powerful primitives, e.g., configuration management, rendezvous, group membership, lock, R/W lock, barrier.</p>
+<h2 id="FAQ"><a href="#FAQ" class="headerlink" title="FAQ"></a>FAQ</h2><p>Here is the <a href="https://pdos.csail.mit.edu/6.824/papers/zookeeper-faq.txt" target="_blank" rel="noopener">FAQ from MIT 6.824</a></p>
+<blockquote>
+<p>Q: What does <code>Linearizable</code> mean?</p>
+</blockquote>
+<p>A: In a linearizable system, as soon as one client successfully completes a write, all clients reading from the database must be able to see the value just written. The value read is the most recent, up-to-date value, and doesn’t come from a stale cache or replica. In other words, linearizability is a recency guarantee. For detail please refer to <em>Designing Data Intensive Application, Chapter 9.2, Linearizability</em>.</p>
+<blockquote>
+<p>Q: What does <code>pipeline</code> mean?</p>
+</blockquote>
+<p>A: MIT 6.824 FAQ: Zookeeper “pipelines” the operations in the client API (create, delete, exists, etc). What pipelining means here is that these operations are executed asynchronously by clients. The client calls create, delete, sends the operation to Zookeeper and then returns. At some point later, Zookeeper invokes a callback on the client that tells the client that the operation has been completed and what the results are. This asynchronous interface allow a client to pipeline many operations: after it issues the first, it can immediately issue a<br>second one, and so on. This allows the client to achieve high throughput; it doesn’t have to wait for each operation to complete before starting a second one.</p>
+<p>A worry with pipelining is that operations that are in flight might be re-ordered, which would cause the problem that the authors to talk about in 2.3. If a the leader has many write operations in flight followed by write to ready, you don’t want those operations to be re-ordered, because then other clients may observe ready before the preceding writes have been applied. To ensure that this cannot happen, Zookeeper guarantees FIFO for client operations; that is the client operations are applied in the order they have been issued.</p>
+<blockquote>
+<p>Q: In the case of read requests, a server simply reads the state of the local database, will we get stale data?</p>
+</blockquote>
+<p>A: Yes, we may read stale data. If we need the latest data, we can use <code>sync</code>.</p>
+<blockquote>
+<p>Q: Each read request is processed and tagged with a zxid that corresponds to the last transaction seen by the server. What does transaction stands for?</p>
+</blockquote>
+<p>A: A write request.</p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ol>
+<li><a href="https://pdos.csail.mit.edu/6.824/papers/zookeeper.pdf" target="_blank" rel="noopener">ZooKeeper: Wait-free coordination for Internet-scale systems</a>  </li>
+<li><a href="https://pdos.csail.mit.edu/6.824/schedule.html" target="_blank" rel="noopener">6.824 Schedule: Spring 2018</a>  </li>
+<li><em>Designing Data Intensive Application, Chapter 9.2, Linearizability</em>  </li>
+</ol>
+
+      
+    </div>
+    <footer class="entry-meta entry-footer">
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/Paper/">Paper</a>
+
+      
+  <span class="ico-tags"></span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Zookeeper/">Zookeeper</a></li></ul>
+
+      
+            
+      
+        
+	<section id="comments" class="comment">
+	  <div id="disqus_thread">
+	  <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	  </div>
+	</section>
+
+	<script type="text/javascript">
+	var disqus_shortname = 'disqus_t7ZVi0Vi0o';
+	(function(){
+	  var dsq = document.createElement('script');
+	  dsq.type = 'text/javascript';
+	  dsq.async = true;
+	  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	}());
+	(function(){
+	  var dsq = document.createElement('script');
+	  dsq.type = 'text/javascript';
+	  dsq.async = true;
+	  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+	  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	}());
+	</script>
+
+
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2019/08/19/Paper/Spinnaker/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Spinnaker</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+<!-- Table of Contents -->
+
+  <aside id="sidebar">
+    <div id="toc" class="toc-article" style="overflow-y: scroll; max-width: 28%;">
+    <strong class="toc-title">Contents</strong>
+    
+      <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Data-Model-and-API"><span class="nav-number">1.</span> <span class="nav-text">Data Model and API</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Architecture"><span class="nav-number">2.</span> <span class="nav-text">Architecture</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Write"><span class="nav-number">2.1.</span> <span class="nav-text">Write</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Read"><span class="nav-number">2.2.</span> <span class="nav-text">Read</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Recovery"><span class="nav-number">2.3.</span> <span class="nav-text">Recovery</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Examples-of-primitives"><span class="nav-number">3.</span> <span class="nav-text">Examples of primitives</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FAQ"><span class="nav-number">4.</span> <span class="nav-text">FAQ</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reference"><span class="nav-number">5.</span> <span class="nav-text">Reference</span></a></li></ol>
+    
+    </div>
+  </aside>
+</section>
+        
+      </div>
+      <footer id="footer" class="site-footer">
+  
+
+  <div class="clearfix container">
+      <div class="site-info">
+	      &copy; 2019 The Code and Sixpence All Rights Reserved.
+          
+            <span id="busuanzi_container_site_uv">
+              本站访客数<span id="busuanzi_value_site_uv"></span>人次  
+              本站总访问量<span id="busuanzi_value_site_pv"></span>次
+            </span>
+          
+      </div>
+      <div class="site-credit">
+        Theme by <a href="https://github.com/iTimeTraveler/hexo-theme-hiero" target="_blank">hiero</a>
+      </div>
+  </div>
+</footer>
+
+
+<!-- min height -->
+
+<script>
+    var contentdiv = document.getElementById("content");
+
+    contentdiv.style.minHeight = document.body.offsetHeight - document.getElementById("allheader").offsetHeight - document.getElementById("footer").offsetHeight + "px";
+</script>
+
+<!-- Custome JS -->
+<script src="/js/my.js"></script>
+    </div>
+    <!-- <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/categories" class="mobile-nav-link">Categories</a>
+  
+    <a href="/tags" class="mobile-nav-link">Tags</a>
+  
+    <a href="/about" class="mobile-nav-link">About</a>
+  
+</nav> -->
+    
+
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.js"></script>
+
+
+<script src="/js/scripts.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'true', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+
+
+
+
+	<script async src="https://dnqof95d40fo6.cloudfront.net/atw7f8.js">
+	</script>
+
+
+
+
+
+<!-- Tencent Analytics -->
+	<script type="text/javascript">
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//tajs.qq.com/stats?sId={{ theme.tencent_analytics }}";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+<!-- End Tencent Analytics -->
+
+
+  </div>
+
+  <a id="rocket" href="#top" class=""></a>
+  <script type="text/javascript" src="/js/totop.js" async=""></script>
+</body>
+</html>
