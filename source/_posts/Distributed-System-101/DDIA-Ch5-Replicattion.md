@@ -1,8 +1,8 @@
 ---
-title: Replication 101
-date: 2019-07-01 00:00:00
-tags: [Replication, Distributed System]
-categories: [Distributed System]
+title: DDIA - Ch5 - Replication
+date: 2019-08-01 00:00:00
+tags: [Replication, Distributed System, DDIA]
+categories: [Reading Notes, Designing Data-Intensive Applications]
 ---
 
 ## Abstract  
