@@ -13,29 +13,26 @@
   <!-- PACE Progress Bar START -->
 
   
-  <title>spinnaker | The Code and Sixpence</title>
+  <title>6.824 lab 3b - key/value service with log compaction | The Code and Sixpence</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta name="keywords" content="6.824Paxos">
+  <meta name="keywords" content="6.824">
   
   
   
   
-  <meta name="description" content="This blog is my reading notes for Spinnaker. We can learn from this paper how to use consensus algorithm (Paxos) to do replication in database.">
-<meta name="keywords" content="6.824,Paxos">
+  <meta name="description" content="This blog is my notes for MIT 6.824 Lab 3, Part B: Key/value service with log compaction.">
+<meta name="keywords" content="6.824">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Spinnaker">
-<meta property="og:url" content="https://blog-pika.github.io/2019/08/19/Paper/Spinnaker/index.html">
+<meta property="og:title" content="6.824 Lab 3B - Key&#x2F;value service with Log Compaction">
+<meta property="og:url" content="https://blog-pika.github.io/2019/09/23/CourseProject/6-824-lab-3b/index.html">
 <meta property="og:site_name" content="The Code and Sixpence">
-<meta property="og:description" content="This blog is my reading notes for Spinnaker. We can learn from this paper how to use consensus algorithm (Paxos) to do replication in database.">
+<meta property="og:description" content="This blog is my notes for MIT 6.824 Lab 3, Part B: Key/value service with log compaction.">
 <meta property="og:locale" content="default">
-<meta property="og:image" content="https://blog-pika.github.io/images/Spinnaker/A-Spinnaker-Cluster.png">
-<meta property="og:image" content="https://blog-pika.github.io/images/Spinnaker/The-replication-protocol.png">
-<meta property="og:updated_time" content="2019-09-08T21:10:14.562Z">
+<meta property="og:updated_time" content="2019-09-24T04:51:45.647Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Spinnaker">
-<meta name="twitter:description" content="This blog is my reading notes for Spinnaker. We can learn from this paper how to use consensus algorithm (Paxos) to do replication in database.">
-<meta name="twitter:image" content="https://blog-pika.github.io/images/Spinnaker/A-Spinnaker-Cluster.png">
+<meta name="twitter:title" content="6.824 Lab 3B - Key&#x2F;value service with Log Compaction">
+<meta name="twitter:description" content="This blog is my notes for MIT 6.824 Lab 3, Part B: Key/value service with log compaction.">
   
     <link rel="alternate" href="/atom.xml" title="The Code and Sixpence" type="application/atom+xml">
   
@@ -161,7 +158,7 @@ var themeMenus = {};
             
       <div id="content" class="outer">
         
-          <section id="main" style="float:none;"><article id="post-Paper/Spinnaker" style="width: 66%; float:left;" class="article article-type-post" itemscope itemprop="blogPost" >
+          <section id="main" style="float:none;"><article id="post-CourseProject/6-824-lab-3b" style="width: 66%; float:left;" class="article article-type-post" itemscope itemprop="blogPost" >
   <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
     
     
@@ -169,7 +166,7 @@ var themeMenus = {};
         
   
     <h1 class="thumb" class="article-title" itemprop="name">
-      Spinnaker
+      6.824 Lab 3B - Key/value service with Log Compaction
     </h1>
   
 
@@ -177,8 +174,8 @@ var themeMenus = {};
     
     <div class="article-meta">
       
-	Posted on <a href="/2019/08/19/Paper/Spinnaker/" class="article-date">
-	  <time datetime="2019-08-20T03:12:09.000Z" itemprop="datePublished">August 19, 2019</time>
+	Posted on <a href="/2019/09/23/CourseProject/6-824-lab-3b/" class="article-date">
+	  <time datetime="2019-09-24T03:06:31.000Z" itemprop="datePublished">September 23, 2019</time>
 	</a>
 
       
@@ -189,67 +186,80 @@ var themeMenus = {};
     </div>
     <div class="article-entry" itemprop="articleBody">
       
-        <p>This blog is my reading notes for Spinnaker. We can learn from this paper how to use consensus algorithm (Paxos) to do replication in database.</p>
+        <p>This blog is my notes for <a href="https://pdos.csail.mit.edu/6.824/labs/lab-kvraft.html" target="_blank" rel="noopener">MIT 6.824 Lab 3, Part B: Key/value service with log compaction</a>.</p>
 <a id="more"></a>
 
-<h2 id="Pros"><a href="#Pros" class="headerlink" title="Pros"></a>Pros</h2><p>Spinnaker features key-based range partitioning, 3-way replication, and a transactional get-put API with the option to choose either strong or timeline consistency on reads. Spinnaker will be available for reads and writes as long a majority of its replicas are alive.  The performance can be competitive with alternatives that provide weaker consistency guarantees. Compared to an eventually consistent datastore, Spinnaker can be as fast or even faster on reads and only 5% to 10% slower on writes.</p>
-<h2 id="Cons"><a href="#Cons" class="headerlink" title="Cons"></a>Cons</h2><p>Only suitable in single datacenter and cannot tolerate network partition</p>
-<h2 id="Data-Model-and-API"><a href="#Data-Model-and-API" class="headerlink" title="Data Model and API"></a>Data Model and API</h2><p>Data Model is almost the same as BigTable. Besides, each API call is executed as a single-operation transaction.</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">get(key, colname, consistent)</span><br><span class="line"><span class="comment">// Read a column value and its version number from a row. The setting of the ‘consistent’ ﬂag is used to choose the consistency level. Setting it to ‘true’ chooses strong consistency, and the latest value is always returned. Setting it to ‘false’ chooses timeline consistency, and a possibly stale value is returned in exchange for better performance.</span></span><br><span class="line"></span><br><span class="line">put(key, colname, colvalue)</span><br><span class="line"><span class="comment">// Insert a column value into a row.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">delete</span>(key, colname)</span><br><span class="line"><span class="comment">// Delete a column from a row.</span></span><br><span class="line"></span><br><span class="line">conditionalPut(key, colname, value, v)</span><br><span class="line"><span class="comment">// Insert a new column value into a row only if the column’s current version number is equal to ‘v’. Otherwise, an error is returned.</span></span><br><span class="line"></span><br><span class="line">conditionalDelete(key, colname, v)</span><br><span class="line"><span class="comment">//Like conditional put but for delete.</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="Architecture"><a href="#Architecture" class="headerlink" title="Architecture"></a>Architecture</h2><p>The architecture of Spinnaker is also similar to BigTable. However, they use different ways to make logs and data fault-tolerant:</p>
-<ul>
-<li>BigTable: store data and logs on GFS</li>
-<li>Spinnaker: use <code>Paxos</code> to replicate logs to multiple nodes</li>
-</ul>
-<h3 id="Replication"><a href="#Replication" class="headerlink" title="Replication"></a>Replication</h3><p>Like Bigtable, Spinnaker distributes the rows of a table across its cluster using range partitioning. Each node is assigned a base key range, which is replicated on the next N − 1 nodes. Each group of nodes involved in replicating a key range is denoted as a cohort. Figure below shows a Spinnaker cluster with 5 nodes and N = 3.</p>
-<p><img src="/images/Spinnaker/A-Spinnaker-Cluster.png" alt="Example of a Spinnaker cluster"></p>
-<p>Each cohort has an elected leader, with the other 2 nodes acting as followers. The replication protocol has two phases: a <code>leader election phase</code>, followed by a <code>quorum phase</code> where the leader proposes a write and the followers accept it.</p>
-<p><img src="/images/Spinnaker/The-replication-protocol.png" alt="The replication protocol"></p>
-<p>The steps of Spinnaker’s replication protocol in steady state are as follow:</p>
+<h2 id="Design-Overview"><a href="#Design-Overview" class="headerlink" title="Design Overview"></a>Design Overview</h2><p>The design of Lab 3A can be found here: <a href="https://blog-pika.github.io/2019/09/05/CourseProject/6-824-lab-3a/#more">6.824 Lab 3A - Key/value service without log compaction</a>.</p>
+<p>In Lab 3B, every KV-service + Raft-Service Pair should maintain their local snapshot independently. The KV-service of the follower decides whether its Raft-service need to do a snapshot, rather than the leader. The only scenario that the leader participate in follower’s snapshot is when leader is lagging behind and leader need to send snapshot so that follower can catch up.</p>
+<p>The normal workflow between a KV-service + Raft-Service Pair is as below:</p>
 <ol>
-<li>When a client submits a write W, it always gets routed to the leader of the affected key range</li>
-<li>The leader appends a log record for W to its log and then initiates a log force to disk</li>
-<li>The leader appends W to its commit queue and sends a propose message for W to its followers</li>
-<li>When the followers receive the propose message, they force a log record for W to disk, append W to their commit queue, and reply with an ack to the leader</li>
-<li>After the leader gets an ack from the majority, it applies W to its memtable, effectively committing W</li>
-<li>The leader returns a response to the client. </li>
+<li>Raft applies Log that has been safely committed</li>
+<li>KV-Server applied Log (same as Lab 3A). After applying Logs, it checks if <code>Raft.GetStateSize() &gt; KV-Server.maxStateSize</code>, if yes, call <code>kv.rf.TrimRaftState(snapshot, lastIncludedIndex)</code></li>
+<li>Raft executes <code>rf.TrimRaftState(snapshot, lastIncludedIndex)</code>, to truncate logs, persist logs + snapshot</li>
 </ol>
-<p>Periodically, the leader sends an asynchronous commit message to the followers asking them to apply all pending writes up to a certain LSN to their memtable.</p>
-<p>Strongly consistent reads are always routed to the cohort’s leader, so they are guaranteed to see the latest value for W. Timeline consistent reads can be routed to any node in the cohort, so they may see a stale value for W until its commit message is processed</p>
-<h3 id="Recovery"><a href="#Recovery" class="headerlink" title="Recovery"></a>Recovery</h3><p>Let f.cmt = follower’s last committed LSN and f.lst = the follower’s last LSN in its log.</p>
-<p>The recovery of a follower proceeds in two phases:</p>
-<p><code>local recovery</code>: simply replay log between snapshot and f.cmt to recover the memtable<br><code>catch up</code>: the logs between f.cmt and f.lst may or may not have been committed by the leader, so the follower has to consult the leader</p>
-<p>The recovery of leader consists of re-election. The new leader may be not up-to-date, so it need to truncate the logs. However, since different key ranges write to the same log file (same as BigTable), Spinnaker uses skip-list to do logical truncation. </p>
-<h2 id="FAQ"><a href="#FAQ" class="headerlink" title="FAQ"></a>FAQ</h2><p>The lecture of MIT has FAQ: <a href="https://pdos.csail.mit.edu/6.824/papers/spinnaker-faq.txt" target="_blank" rel="noopener">Spinnaker FAQ</a></p>
+<p>In this Lab, the log is synchronized submitted to Raft Leader, that is, when KV-Service is applying <code>log[n]</code>, all the previous logs from <code>[0]~[n-1]</code> have already been applied. Therefore, when we are applying <code>log[n]</code>, we can safely truncate <code>log[0]~log[n-1]</code>.</p>
+<p>So what does a snapshot struct contain?</p>
+<ul>
+<li>Db: the current Key-Value state</li>
+<li>last Included Raft Log Index: the last Log that is included in the snapshot.</li>
+<li>last applied operations for every client, when the KV-Server is reset by snapshot, it should know which operations have already been executed.</li>
+</ul>
+<p>For the implementation of <code>InstallSnapshot</code> related RPC, please refer to the steps in the paper.</p>
+<h2 id="Implementation-Tips"><a href="#Implementation-Tips" class="headerlink" title="Implementation Tips"></a>Implementation Tips</h2><p>Here are several pitfalls when implementing Lab 3B:</p>
+<ul>
+<li>Raft Log will be truncated, and after that <code>Log Index != Log position in array</code>. Therefore, the <code>Log</code> struct should have a <code>Index</code> filed. And the <code>Index</code> should be converted to <code>offset in Log array</code> when dealing with Log array.</li>
+<li>In Raft paper, the <code>lastIncludedLog</code> of the snapshot should also be truncated in the Raft Logs. I keep this log when doing snapshot, so that I don’t need to handle corner case for empty Logs. In this case,  the kept <code>lastIncludedLog</code> is similar to the dummy <code>Log[0]</code> in Lab2B</li>
+<li>When updating the lastAppliedOperation, use <code>kv.lastApplieds[command.ClientId] = command.OpSequence</code> rather than <code>kv.lastApplieds[command.ClientId] += 1</code>, because <code>command.OpSequence</code> may not be continuous due to lossy network</li>
+<li>A snapshot should remember last executed command index of every client. Therefore, after a KV-Server is reset by snapshot, it knows if it should reject a client command or not.</li>
+<li><code>InstallSnapshot</code> should check if the snapshot is stale or not.</li>
+</ul>
+<h2 id="FAQ"><a href="#FAQ" class="headerlink" title="FAQ"></a>FAQ</h2><p>Here are my thoughts when implementing Lab 3B:</p>
 <blockquote>
-<p>Q: What is a shared write-ahead log?</p>
+<p>Q: How can KV-server send snapshot contents to Raft?</p>
 </blockquote>
-<p>A: Same as BigTable, one node only has one log file to improve performance. Different key ranges write to the same log file.</p>
+<p>A: KV-Server has a Raft instance.</p>
 <blockquote>
-<p>Q: Periodically, the leader in Spinnaker sends an asynchronous commit message to the followers. Is this design better than sending the commit message as soon as the leader commits the log?</p>
+<p>Q: How can Raft send snapshot contents to KV-server, since Raft does not have an instance of KV-Server?</p>
 </blockquote>
+<p>A: When Raft finishes <code>InstallSnapshot</code> and need to reset state machine, it can simply send a <code>ApplyMsg</code> containing snapshot contents to <code>applyChan</code>.</p>
 <blockquote>
-<p>Q: The paper says “A conditional put is guaranteed to have the same outcome on each node of the cohort because writes are executed in LSN order within a cohort.” If using normal put, will the writes be applied out of order?</p>
+<p>Q: Who should decides when to do a snapshot, KV-Server or Raft?</p>
 </blockquote>
-<blockquote>
-<p>Q: The paper says: “At the end of the catch up phase, the leader momentarily blocks new writes to ensure that that the follower is fully caught up.” I don’t think blocking the writes is necessary.</p>
-</blockquote>
-<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ol>
-<li><a href="https://pdos.csail.mit.edu/6.824/papers/spinnaker.pdf" target="_blank" rel="noopener">Using Paxos to Build a Scalable, Consistent, and Highly Available Datastore</a>  </li>
-<li><a href="https://pdos.csail.mit.edu/6.824/schedule.html" target="_blank" rel="noopener">6.824 Schedule: Spring 2018</a></li>
+<p>A: KV-server, which can lead to simpler code.</p>
+<p>If Raft is responsible for the detecting, then the workflow is like that:</p>
+<ol>
+<li>Raft find size &gt; maxStateSize and reports to KV-server</li>
+<li>KV-server receives this message and sends snapshot to Raft</li>
+<li>Raft does snapshot</li>
 </ol>
+<p>If KV-Server is responsible for the detecting, we only need to do step 2 and step 3.</p>
+<blockquote>
+<p>Q: Where should snapshot be persisted?</p>
+</blockquote>
+<p>A: Raft already has a <code>Persister</code>, we should use it to store snapshot like what we did in Lab2B to persist Raft state.</p>
+<blockquote>
+<p>Q: Should snapshot be part of Raft state?</p>
+</blockquote>
+<p>A: No. If we do operations in Lab 2B, that is, Raft operations other than snapshot, we don’t need to touch the persisted snapshot. Also, We do snapshot only once in a while but we need to persist Raft state frequently. Therefore, separating the persister of snapshot and Raft state can have much better performance. However, we do need to persistent Raft state + Raft Snapshot in an atomic action, otherwise we may have inconsistency.</p>
+<blockquote>
+<p>Q: How should KV-Server replay logs when restarting, if it also has snapshot?</p>
+</blockquote>
+<p>A: The only difference with Lab 3A is that KV-Server should ignore the log that has already been included in snapshot when replaying.</p>
+<blockquote>
+<p>Q: I am confused at <code>Think about how your Raft will operate while storing only the tail of the log, and how it will discard old log entries.</code> How can Raft operates with only partial log?</p>
+</blockquote>
+<p>A: The meaning of this sentence should be: <code>Raft operates while storing only the tail of the log + snapshot from KV-Server</code>. Raft itself can never operates with partial log information.</p>
 
       
     </div>
     <footer class="entry-meta entry-footer">
       
 	<span class="ico-folder"></span>
-    <a class="article-category-link" href="/categories/Paper/">Paper</a>
+    <a class="article-category-link" href="/categories/Project/">Project</a>
 
       
   <span class="ico-tags"></span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/6-824/">6.824</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Paxos/">Paxos</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/6-824/">6.824</a></li></ul>
 
       
             
@@ -287,19 +297,10 @@ var themeMenus = {};
     
 <nav id="article-nav">
   
-    <a href="/2019/08/21/Paper/Zookeeper/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          Zookeeper
-        
-      </div>
-    </a>
   
-  
-    <a href="/2019/08/19/Distributed-System-101/Consistency-Level/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2019/09/05/CourseProject/6-824-lab-3a/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Consistency Level</div>
+      <div class="article-nav-title">6.824 Lab 3A - Key/value service without log compaction</div>
     </a>
   
 </nav>
@@ -313,7 +314,7 @@ var themeMenus = {};
     <div id="toc" class="toc-article" style="overflow-y: scroll; max-width: 28%;">
     <strong class="toc-title">Contents</strong>
     
-      <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Pros"><span class="nav-number">1.</span> <span class="nav-text">Pros</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Cons"><span class="nav-number">2.</span> <span class="nav-text">Cons</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Data-Model-and-API"><span class="nav-number">3.</span> <span class="nav-text">Data Model and API</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Architecture"><span class="nav-number">4.</span> <span class="nav-text">Architecture</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Replication"><span class="nav-number">4.1.</span> <span class="nav-text">Replication</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Recovery"><span class="nav-number">4.2.</span> <span class="nav-text">Recovery</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FAQ"><span class="nav-number">5.</span> <span class="nav-text">FAQ</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reference"><span class="nav-number">6.</span> <span class="nav-text">Reference</span></a></li></ol>
+      <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Design-Overview"><span class="nav-number">1.</span> <span class="nav-text">Design Overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Implementation-Tips"><span class="nav-number">2.</span> <span class="nav-text">Implementation Tips</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FAQ"><span class="nav-number">3.</span> <span class="nav-text">FAQ</span></a></li></ol>
     
     </div>
   </aside>

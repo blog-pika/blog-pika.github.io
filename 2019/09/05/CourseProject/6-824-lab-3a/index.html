@@ -31,7 +31,7 @@
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://blog-pika.github.io/images/CourseProject/6.824_Lab3A_Overview.jpg">
 <meta property="og:image" content="https://blog-pika.github.io/images/CourseProject/6.824_Lab3A_Race_Condition.jpg">
-<meta property="og:updated_time" content="2019-09-08T21:09:50.903Z">
+<meta property="og:updated_time" content="2019-09-24T04:45:37.398Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="6.824 Lab 3A - Key&#x2F;value service without log compaction">
 <meta name="twitter:description" content="This blog is my notes for MIT 6.824 Lab 3A: Key/value service without log compaction.">
@@ -222,6 +222,14 @@ var themeMenus = {};
 <li>at-most-once: Every Request comes with a <code>ClientId</code> and a <code>RequestId</code>. We can check if a request has been executed by checking <code>ClientId</code> + <code>RequestId</code>. Therefore, every request will only be executed at-most-once.</li>
 </ul>
 <blockquote>
+<p>Q: Will this KV-Server has split-brain issue? That is, is it possible that we receive stale data from old leader?</p>
+</blockquote>
+<p>A: No. A Raft command need to be committed before applied. A old leader cannot commit the log because:</p>
+<ul>
+<li>if it is in a minority network, it cannot commit the log</li>
+<li>if it is in majority network, it will find itself out-of-date</li>
+</ul>
+<blockquote>
 <p>Q: Can KV-Server accepts the <code>appliedLog</code> from the follower Raft-Server? This question is identical to do we need to check if the server is still leader when we receive log from Raft.  </p>
 </blockquote>
 <p>A: No, the followers may lag behind. If the leader has accepted some write requests and acks the client, a follower’s return data may be stale, which violates <code>strong consistency</code>. Some other systems may relax the consistency model for better performance, e.g., Zookeeper can read from the follower.</p>
@@ -296,6 +304,15 @@ var themeMenus = {};
   
     
 <nav id="article-nav">
+  
+    <a href="/2019/09/23/CourseProject/6-824-lab-3b/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          6.824 Lab 3B - Key/value service with Log Compaction
+        
+      </div>
+    </a>
   
   
     <a href="/2019/08/21/Paper/Zookeeper/" id="article-nav-older" class="article-nav-link-wrap">
