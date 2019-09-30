@@ -1,7 +1,7 @@
 ---
 title: Zookeeper
 date: 2019-08-21 00:00:00
-tags: [Zookeeper]
+tags: [Zookeeper, 6.824]
 categories: [Paper]
 ---
 

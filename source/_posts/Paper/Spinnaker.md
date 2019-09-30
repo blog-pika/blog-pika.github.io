@@ -1,7 +1,7 @@
 ---
 title: Spinnaker
 date: 2019-08-19 20:12:09
-tags: [Paxos]
+tags: [Paxos, 6.824]
 categories: [Paper]
 ---
 
