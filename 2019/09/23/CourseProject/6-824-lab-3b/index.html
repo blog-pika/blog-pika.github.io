@@ -29,7 +29,7 @@
 <meta property="og:site_name" content="The Code and Sixpence">
 <meta property="og:description" content="This blog is my notes for MIT 6.824 Lab 3, Part B: Key/value service with log compaction.">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-09-24T04:51:45.647Z">
+<meta property="og:updated_time" content="2019-09-24T04:53:19.075Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="6.824 Lab 3B - Key&#x2F;value service with Log Compaction">
 <meta name="twitter:description" content="This blog is my notes for MIT 6.824 Lab 3, Part B: Key/value service with log compaction.">
@@ -212,6 +212,7 @@ var themeMenus = {};
 <li>When updating the lastAppliedOperation, use <code>kv.lastApplieds[command.ClientId] = command.OpSequence</code> rather than <code>kv.lastApplieds[command.ClientId] += 1</code>, because <code>command.OpSequence</code> may not be continuous due to lossy network</li>
 <li>A snapshot should remember last executed command index of every client. Therefore, after a KV-Server is reset by snapshot, it knows if it should reject a client command or not.</li>
 <li><code>InstallSnapshot</code> should check if the snapshot is stale or not.</li>
+<li>The filed name should be capitalized if you want to encode to /decode from []byte </li>
 </ul>
 <h2 id="FAQ"><a href="#FAQ" class="headerlink" title="FAQ"></a>FAQ</h2><p>Here are my thoughts when implementing Lab 3B:</p>
 <blockquote>
@@ -296,6 +297,15 @@ var themeMenus = {};
   
     
 <nav id="article-nav">
+  
+    <a href="/2019/09/29/CourseProject/6-824-lab-4a/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          6.824 Lab 4A - Key/value service with Log Compaction
+        
+      </div>
+    </a>
   
   
     <a href="/2019/09/05/CourseProject/6-824-lab-3a/" id="article-nav-older" class="article-nav-link-wrap">

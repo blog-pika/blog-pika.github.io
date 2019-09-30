@@ -13,19 +13,26 @@
   <!-- PACE Progress Bar START -->
 
   
-  <title>tag: paxos | The Code and Sixpence</title>
+  <title>6.824 lab 4a - key/value service with log compaction | The Code and Sixpence</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
+  <meta name="keywords" content="6.824">
   
   
   
-  <meta property="og:type" content="website">
-<meta property="og:title" content="The Code and Sixpence">
-<meta property="og:url" content="https://blog-pika.github.io/tags/Paxos/index.html">
+  
+  <meta name="description" content="This blog is my notes for MIT 6.824 Lab 4: Sharded Key/Value Service, Part A: The Shard Master.">
+<meta name="keywords" content="6.824">
+<meta property="og:type" content="article">
+<meta property="og:title" content="6.824 Lab 4A - Key&#x2F;value service with Log Compaction">
+<meta property="og:url" content="https://blog-pika.github.io/2019/09/29/CourseProject/6-824-lab-4a/index.html">
 <meta property="og:site_name" content="The Code and Sixpence">
+<meta property="og:description" content="This blog is my notes for MIT 6.824 Lab 4: Sharded Key/Value Service, Part A: The Shard Master.">
 <meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-09-30T00:40:12.124Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="The Code and Sixpence">
+<meta name="twitter:title" content="6.824 Lab 4A - Key&#x2F;value service with Log Compaction">
+<meta name="twitter:description" content="This blog is my notes for MIT 6.824 Lab 4: Sharded Key/Value Service, Part A: The Shard Master.">
   
     <link rel="alternate" href="/atom.xml" title="The Code and Sixpence" type="application/atom+xml">
   
@@ -75,7 +82,7 @@ var themeMenus = {};
 </script>
 
 
-  <body>
+  <body data-spy="scroll" data-target="#toc" data-offset="50">
 
 
   <header id="allheader" class="site-header" role="banner">
@@ -151,218 +158,121 @@ var themeMenus = {};
             
       <div id="content" class="outer">
         
-          <section id="main">
-  
-  
-  
+          <section id="main" style="float:none;"><article id="post-CourseProject/6-824-lab-4a" style="width: 66%; float:left;" class="article article-type-post" itemscope itemprop="blogPost" >
+  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
     
     
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <h1><a href="/archives/2019" class="archive-year">2019</a></h1>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-
-      <a href="/2019/08/19/Paper/Spinnaker/" class="archive-article-date">
-		  <time datetime="2019-08-20T03:12:09.000Z" itemprop="datePublished">Aug 19, 2019</time>
-	  </a>
-      
+      <header class="article-header">
+        
   
-    <h1 class="thumb" itemprop="name">
-      <a class="archive-article-title" href="/2019/08/19/Paper/Spinnaker/">Spinnaker</a>
+    <h1 class="thumb" class="article-title" itemprop="name">
+      6.824 Lab 4A - Key/value service with Log Compaction
     </h1>
   
 
-    </header>
+      </header>
+    
+    <div class="article-meta">
+      
+	Posted on <a href="/2019/09/29/CourseProject/6-824-lab-4a/" class="article-date">
+	  <time datetime="2019-09-29T07:00:00.000Z" itemprop="datePublished">September 29, 2019</time>
+	</a>
+
+      
+	<span id="busuanzi_container_page_pv">
+	  本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+	</span>
+
+    </div>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>This blog is my notes for <a href="https://pdos.csail.mit.edu/6.824/labs/lab-shard.html" target="_blank" rel="noopener">MIT 6.824 Lab 4: Sharded Key/Value Service, Part A: The Shard Master</a>.</p>
+<a id="more"></a>
+
+<h2 id="Lab-4A-Design-Overview"><a href="#Lab-4A-Design-Overview" class="headerlink" title="Lab 4A Design Overview"></a>Lab 4A Design Overview</h2><p>The design of Lab 4A is almost same as Lab3A: <a href="https://blog-pika.github.io/2019/09/05/CourseProject/6-824-lab-3a/#more">6.824 Lab 3A - Key/value service without log compaction</a>. The only difference is that in Lab 3A clients are sending <code>Get</code>, <code>Put</code>, <code>Append</code> to servers, and servers apply these commands to their key-value pairs; in Lab 4A, clients are sending <code>JOIN</code>, <code>LEAVE</code>, <code>MOVE</code>, <code>QUERY</code> to servers, and servers apply these commands to their Configs.</p>
+<p>One impressive is due to RPC (should be trivial and easy to be found if you are familiar with Golang RPC). In Lab 3A, <code>Op</code> contains all fields of <code>PutAppendArgs</code> + <code>PutAppendReply</code>:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Op <span class="keyword">struct</span> &#123;</span><br><span class="line">    Operation  <span class="keyword">string</span></span><br><span class="line">    Key        <span class="keyword">string</span></span><br><span class="line">    Value      <span class="keyword">string</span></span><br><span class="line">    ClientId   <span class="keyword">int</span></span><br><span class="line">    OpSequence <span class="keyword">int</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>In Lab 4A, <code>Op</code> is a nested struct includes Args.<br>the following definition:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Op <span class="keyword">struct</span> &#123;</span><br><span class="line">    CommandType CommandType</span><br><span class="line">    Args        <span class="keyword">interface</span>&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>According to <a href="https://golang.org/pkg/encoding/gob/" target="_blank" rel="noopener">Package gob</a>: <code>Interface values are transmitted as a string identifying the concrete type being sent (a name that must be pre-defined by calling Register), followed by a byte count of the length of the following data (so the value can be skipped if it cannot be stored), followed by the usual encoding of concrete (dynamic) value stored in the interface value.</code>.</p>
+<p>I did not use <code>gob.Register()</code> to register <code>Op</code> and <code>Args</code>. The result was that when Raft leader sent Log to follower, the follower received a Log with <code>nil</code> <code>Op</code>.</p>
+<h2 id="FAQ"><a href="#FAQ" class="headerlink" title="FAQ"></a>FAQ</h2><p>Here are my thoughts when implementing Lab 4A:</p>
+<blockquote>
+<p>Q: In the test file of Lab 4A, a <code>shardmaster</code> has <code>nservers</code>. Also, it can receive a <code>gid</code> with several severs. What is the difference between servers in <code>nservers</code> and servers in <code>gid</code>?</p>
+</blockquote>
+<p>A: <code>shardmaster</code> uses Raft to implement a fault-tolerant service of <code>nservers</code>. The servers in <code>gid</code> is the meta data of <code>sharded Key-value servers</code>. That is, a <code>gid</code> maps to a <code>Replica Group</code> and the servers of a <code>gid</code> is the servers inside a <code>Replica Group</code>.</p>
+
+      
+    </div>
+    <footer class="entry-meta entry-footer">
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/Project/">Project</a>
+
+      
+  <span class="ico-tags"></span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/6-824/">6.824</a></li></ul>
+
+      
+            
+      
+        
+	<section id="comments" class="comment">
+	  <div id="disqus_thread">
+	  <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	  </div>
+	</section>
+
+	<script type="text/javascript">
+	var disqus_shortname = 'disqus_t7ZVi0Vi0o';
+	(function(){
+	  var dsq = document.createElement('script');
+	  dsq.type = 'text/javascript';
+	  dsq.async = true;
+	  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	}());
+	(function(){
+	  var dsq = document.createElement('script');
+	  dsq.type = 'text/javascript';
+	  dsq.async = true;
+	  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+	  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	}());
+	</script>
+
+
+      
+    </footer>
   </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2019/09/23/CourseProject/6-824-lab-3b/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">6.824 Lab 3B - Key/value service with Log Compaction</div>
+    </a>
+  
+</nav>
+
+  
 </article>
-  
-  
-    </div></section>
-  
 
+<!-- Table of Contents -->
 
+  <aside id="sidebar">
+    <div id="toc" class="toc-article" style="overflow-y: scroll; max-width: 28%;">
+    <strong class="toc-title">Contents</strong>
+    
+      <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Lab-4A-Design-Overview"><span class="nav-number">1.</span> <span class="nav-text">Lab 4A Design Overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FAQ"><span class="nav-number">2.</span> <span class="nav-text">FAQ</span></a></li></ol>
+    
+    </div>
+  </aside>
 </section>
-          <aside id="sidebar">
-  
-    <div class="widget-wrap" style="margin: 20px 0;">
-	<div id="search-form-wrap">
-
-    <form class="search-form">
-        <label style="width: 75%;">
-            <span class="screen-reader-text">Search for:</span>
-            <input type="search" class="search-field" style="height: 42px;" placeholder=" Search…" value="" name="s" title="Search for:">
-        </label>
-        <input type="submit" class="search-form-submit" value="Search">
-    </form>
-    <div class="ins-search">
-    <div class="ins-search-mask"></div>
-    <div class="ins-search-container">
-        <div class="ins-input-wrapper">
-            <input type="text" class="ins-search-input" placeholder="Type something..."/>
-            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
-        </div>
-        <div class="ins-section-wrapper">
-            <div class="ins-section-container"></div>
-        </div>
-    </div>
-</div>
-<script>
-(function (window) {
-    var INSIGHT_CONFIG = {
-        TRANSLATION: {
-            POSTS: 'Posts',
-            PAGES: 'Pages',
-            CATEGORIES: 'Categories',
-            TAGS: 'Tags',
-            UNTITLED: '(Untitled)',
-        },
-        ROOT_URL: '/',
-        CONTENT_URL: '/content.json',
-    };
-    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
-})(window);
-</script>
-<script src="/js/insight.js"></script>
-
-</div>
-</div>
-  
-    
-
-  
-    
-  <div class="widget_athemes_tabs">
-    <ul id="widget-tab" class="clearfix widget-tab-nav">
-      <li class="active"><a>Recent Posts</a></li>
-    </ul>
-    <div class="widget">
-      <ul>
-        
-          <li class="clearfix">
-
-            
-              <div class="widget-entry-summary" style="margin: 0;">
-            
-
-              <h6 style="margin: 0;"><a href="/2019/09/29/CourseProject/6-824-lab-4a/">6.824 Lab 4A - Key/value service with Log Compaction</a></h6>
-              <span>September 29, 2019</span>
-            </div>
-
-          </li>
-        
-          <li class="clearfix">
-
-            
-              <div class="widget-entry-summary" style="margin: 0;">
-            
-
-              <h6 style="margin: 0;"><a href="/2019/09/23/CourseProject/6-824-lab-3b/">6.824 Lab 3B - Key/value service with Log Compaction</a></h6>
-              <span>September 23, 2019</span>
-            </div>
-
-          </li>
-        
-          <li class="clearfix">
-
-            
-              <div class="widget-entry-summary" style="margin: 0;">
-            
-
-              <h6 style="margin: 0;"><a href="/2019/09/05/CourseProject/6-824-lab-3a/">6.824 Lab 3A - Key/value service without log compaction</a></h6>
-              <span>September 5, 2019</span>
-            </div>
-
-          </li>
-        
-          <li class="clearfix">
-
-            
-              <div class="widget-entry-summary" style="margin: 0;">
-            
-
-              <h6 style="margin: 0;"><a href="/2019/08/21/Paper/Zookeeper/">Zookeeper</a></h6>
-              <span>August 21, 2019</span>
-            </div>
-
-          </li>
-        
-          <li class="clearfix">
-
-            
-              <div class="widget-entry-summary" style="margin: 0;">
-            
-
-              <h6 style="margin: 0;"><a href="/2019/08/19/Paper/Spinnaker/">Spinnaker</a></h6>
-              <span>August 19, 2019</span>
-            </div>
-
-          </li>
-        
-          <li class="clearfix">
-
-            
-              <div class="widget-entry-summary" style="margin: 0;">
-            
-
-              <h6 style="margin: 0;"><a href="/2019/08/19/Distributed-System-101/Consistency-Level/">Consistency Level</a></h6>
-              <span>August 19, 2019</span>
-            </div>
-
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Categories</h3>
-    <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Paper/">Paper</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Project/">Project</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Reading-Notes/">Reading Notes</a><span class="category-list-count">4</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Reading-Notes/Designing-Data-Intensive-Applications/">Designing Data-Intensive Applications</a><span class="category-list-count">4</span></li></ul></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
-    <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/6-824/">6.824</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DDIA/">DDIA</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Data-Structure/">Data Structure</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Database/">Database</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed-System/">Distributed System</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Partition/">Partition</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Paxos/">Paxos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Replication/">Replication</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SSTable/">SSTable</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Zookeeper/">Zookeeper</a><span class="tag-list-count">1</span></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
-    <div class="widget tagcloud">
-      <a href="/tags/6-824/" style="font-size: 20px;">6.824</a> <a href="/tags/DDIA/" style="font-size: 15px;">DDIA</a> <a href="/tags/Data-Structure/" style="font-size: 10px;">Data Structure</a> <a href="/tags/Database/" style="font-size: 10px;">Database</a> <a href="/tags/Distributed-System/" style="font-size: 15px;">Distributed System</a> <a href="/tags/Partition/" style="font-size: 10px;">Partition</a> <a href="/tags/Paxos/" style="font-size: 10px;">Paxos</a> <a href="/tags/Replication/" style="font-size: 10px;">Replication</a> <a href="/tags/SSTable/" style="font-size: 10px;">SSTable</a> <a href="/tags/Zookeeper/" style="font-size: 10px;">Zookeeper</a>
-    </div>
-  </div>
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">September 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a><span class="archive-list-count">8</span></li></ul>
-    </div>
-  </div>
-
-
-  
-</aside>
         
       </div>
       <footer id="footer" class="site-footer">
